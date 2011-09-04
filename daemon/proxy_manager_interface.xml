@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node name="/ProxyManager">
+  <interface name="dk.surlykke.it.ProxyManager">
+    <method name="NetworkSignature">
+      <arg type="s" name="signature" direction="out" />
+    </method>
+    <method name="ConfigureProxy">
+      <arg type="b" name="use_proxy" direction="in" />
+      <arg type="s" name="host" direction="in" />
+      <arg type="q" name="port" direction="in" />
+      <arg type="as" name="host_exceptions" direction="in" />
+      <arg type="as" name="domain_exceptions" direction="in" />
+    </method>
+    <signal name="NetworkChanged">
+      <arg type="s" name="signature" direction="out" />
+    </signal>
+  </interface>
+</node>
