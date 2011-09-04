@@ -17,4 +17,5 @@ HEADERS += profilelistmodel.h \
     dbus_interface.h
 FORMS += profilemanager.ui
 OTHER_FILES += icons/icon.svg
-RESOURCES += ProxyManager.qrc
+RESOURCES += \
+    client.qrc
