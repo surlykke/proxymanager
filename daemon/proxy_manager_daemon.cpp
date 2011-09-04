@@ -45,7 +45,7 @@ void ProxyManagerDaemon::configureProxy(bool use_proxy, const QString &host, ush
             qDebug() << "writing no proxy...";
             stream << "# No proxy\n";
         }
-
+        file.close();
         qDebug() << "Reconfigure squid";
         system("squid -k reconfigure");
     }
