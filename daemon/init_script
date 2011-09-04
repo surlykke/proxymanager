@@ -12,9 +12,10 @@
 # Short-Description:
 ### END INIT INFO
 
-NAME=daemon
+NAME=proxymanagerd
 DESC="Proxy manager"
 DAEMON=/usr/local/bin/$NAME
+ls $DAEMON
 PIDFILE=/var/run/$NAME.pid
 
 . /lib/lsb/init-functions
