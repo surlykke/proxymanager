@@ -34,7 +34,7 @@ public slots:
   private:
 
   DBusInterface *dbusInterface;
-
+  QString currentSignature;
 
 };
 

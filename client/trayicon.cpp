@@ -9,11 +9,7 @@
 #include <QDBusPendingReply>
 #include "profile.h"
 
-TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent), menu(parent) {
-
-
-
-
+TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent), menu(parent), currentSignature("") {
     setIcon(QIcon(":icons/icon.svg"));
     setContextMenu(&menu);
     connect(contextMenu(), SIGNAL(triggered(QAction*)), this, SLOT(activateProfile(QAction*)));;
@@ -67,12 +63,14 @@ void TrayIcon::saveProfiles(QList<Profile> &profiles) {
 
 void TrayIcon::activateProfile(QAction* action) {
     if (action->data().type() == QVariant::Int) {
-        Profile profile = loadProfiles()[action->data().toInt()];
+        QList<Profile> profiles = loadProfiles();
+        Profile& profile = profiles[action->data().toInt()];
         qDebug() << "activating: " << profile.name;
         qDebug() << "Host: " << profile.proxyHost;
         qDebug() << "Port: " << profile.proxyPort;
         qDebug() << "HostExceptions: " << profile.hostExceptions;
         qDebug() << "DomainExceptions: " << profile.domainExceptions;
+        profile.networkSignature = currentSignature;
         QDBusPendingReply<> reply = dbusInterface->ConfigureProxy(profile.useProxy, profile.proxyHost, profile.proxyPort, profile.hostExceptions, profile.domainExceptions);
         if (reply.isValid()) {
             qDebug() << "Valid";
@@ -80,6 +78,7 @@ void TrayIcon::activateProfile(QAction* action) {
         else {
             qDebug() << QDBusError::errorString(reply.error().type());
         }
+        saveProfiles(profiles);
     }
 }
 
@@ -105,12 +104,14 @@ void TrayIcon::exitProxyManager() {
 
 void TrayIcon::networkChanged(QString newNetworkSignature) {
     qDebug() << "Ind i client networkChanged.., signature: " << newNetworkSignature;
+    currentSignature = newNetworkSignature;
     if (newNetworkSignature == "") {
         return;
     }
 
     QList<Profile> profiles = loadProfiles();
     for (int i = 0; i < profiles.size(); i++) {
+        qDebug() << "Comparing " << newNetworkSignature << " with " << profiles.at(i).networkSignature;
         if (newNetworkSignature == profiles.at(i).networkSignature) {
             qDebug() << "Switching to " << profiles.at(i).name;
         }

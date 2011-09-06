@@ -3,6 +3,7 @@
 #include <QTextStream>
 
 #include "proxy_manager_daemon.h"
+#include "proxy_manager_consts.h"
 #include <QStringList>
 #include <QCryptographicHash>
 #include <iostream>
@@ -10,6 +11,8 @@
 ProxyManagerDaemon::ProxyManagerDaemon(int argc, char* argv[])
     : QCoreApplication(argc, argv), resolvConfWatcher(QStringList("/etc/resolv.conf")) {
     connect(&resolvConfWatcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged(QString)));
+    QString signature = networkSignature();
+    emit NetworkChanged(signature);
 }
 
 ProxyManagerDaemon::~ProxyManagerDaemon() {
@@ -17,7 +20,8 @@ ProxyManagerDaemon::~ProxyManagerDaemon() {
 
 void ProxyManagerDaemon::configureProxy(bool use_proxy, const QString &host, ushort port, const QStringList &host_exceptions, const QStringList &domain_exceptions) {
     qDebug() << "configureProxy(" << use_proxy << ", " << host << ", " << port << ", " << host_exceptions << ", " << domain_exceptions << ");";
-    QFile file("/var/lib/ProxyManager/ProxyManagerSquid.conf");
+    QFile file(SQUID_CONF_PATH);
+    qDebug() << "Opening " << SQUID_CONF_PATH;
     if (file.open(QIODevice::Truncate | QIODevice::WriteOnly)) {
         QTextStream stream(&file);
         if (use_proxy) {
@@ -48,6 +52,9 @@ void ProxyManagerDaemon::configureProxy(bool use_proxy, const QString &host, ush
         file.close();
         qDebug() << "Reconfigure squid";
         system("squid -k reconfigure");
+    }
+    else {
+        std::cerr << "Could not open " << PID_FILE_PATH << "\n";
     }
 }
 

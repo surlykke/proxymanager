@@ -23,7 +23,16 @@ SOURCES += main.cpp \
 
 HEADERS += \
     proxy_manager_daemon.h \
-    dbus_adaptor.h
+    dbus_adaptor.h \
+    proxy_manager_consts.h
 
 OTHER_FILES += \
-    init_script
+    proxy-manager \
+    proxy_manager_interface.xml
+
+target.path = /usr/local/bin
+
+init.path = /etc/init.d
+init.files = proxy-manager
+
+INSTALLS += target init
