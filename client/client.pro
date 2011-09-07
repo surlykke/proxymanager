@@ -19,3 +19,6 @@ FORMS += profilemanager.ui
 OTHER_FILES += icons/icon.svg
 RESOURCES += \
     client.qrc
+
+target.path = /usr/local/bin
+INSTALLS += target
