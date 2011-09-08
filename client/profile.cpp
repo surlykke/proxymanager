@@ -5,7 +5,7 @@ Profile::Profile()
 }
 
 Profile::Profile(QMap<QString, QVariant> serialized) {
-    networkSignature = serialized["networkSignature"].toString();
+    id = serialized["id"].toString();
     name = serialized["name"].toString();
     useProxy = serialized["useProxy"].toBool();
     proxyHost = serialized["proxyHost"].toString();
@@ -19,7 +19,7 @@ Profile::~Profile() {
 
 QMap<QString, QVariant> Profile::serialize() {
   QMap<QString, QVariant> result;
-  result["networkSignature"] = networkSignature;
+  result["id"] = id;
   result["name"] = name;
   result["useProxy"] = useProxy;
   result["proxyHost"] = proxyHost;
@@ -30,7 +30,7 @@ QMap<QString, QVariant> Profile::serialize() {
 }
 
 void Profile::copy(Profile &otherProfile) {
-  this->networkSignature = otherProfile.networkSignature;
+  this->id = otherProfile.id;
   this->name = otherProfile.name;
   this->useProxy = otherProfile.useProxy;
   this->proxyHost = otherProfile.proxyHost;

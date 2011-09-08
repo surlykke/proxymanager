@@ -5,6 +5,7 @@
  *      Author: christian
  */
 
+#include <QUuid>
 #include "profilelistmodel.h"
 
 ProfileListModel::ProfileListModel(QList<Profile> & profileList, QObject *parent) : QAbstractListModel(parent), m_profileList(profileList) {
@@ -63,6 +64,7 @@ void ProfileListModel::profileUpdated(int row) {
 
 QModelIndex ProfileListModel::addProfile() {
   Profile profile;
+  profile.id = QUuid::createUuid();
   profile.name = "Choose a profile name..";
   profile.useProxy = false;
   profile.proxyHost = "";

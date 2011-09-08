@@ -17,7 +17,7 @@ public:
 
     void copy(Profile & otherProfile);
 
-    QString networkSignature;
+    QString id;
     QString name; 
     bool useProxy;
     QString proxyHost;

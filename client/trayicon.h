@@ -27,6 +27,9 @@ private:
 
 public slots:
   void activateProfile(QAction* action);
+  void activateProfile(const Profile& profile);
+  void rememberAssociation(QString networkSignature, QString profileId);
+
   void manageProfiles();
   void exitProxyManager();
   void networkChanged(QString key);

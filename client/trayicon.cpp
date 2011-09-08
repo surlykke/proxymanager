@@ -17,6 +17,10 @@ TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent), menu(parent), cur
     dbusInterface = new DBusInterface(QDBusConnection::systemBus(), this);
     qDebug() << "dbusInterface created...";
     connect(dbusInterface, SIGNAL(NetworkChanged(QString)), this, SLOT(networkChanged(QString)));
+    QDBusReply<QString> signatureReply = dbusInterface->NetworkSignature();
+    if (signatureReply.isValid()) {
+        currentSignature = signatureReply.value();
+    }
     makeContextMenu();
 }
 
@@ -64,23 +68,37 @@ void TrayIcon::saveProfiles(QList<Profile> &profiles) {
 void TrayIcon::activateProfile(QAction* action) {
     if (action->data().type() == QVariant::Int) {
         QList<Profile> profiles = loadProfiles();
-        Profile& profile = profiles[action->data().toInt()];
-        qDebug() << "activating: " << profile.name;
-        qDebug() << "Host: " << profile.proxyHost;
-        qDebug() << "Port: " << profile.proxyPort;
-        qDebug() << "HostExceptions: " << profile.hostExceptions;
-        qDebug() << "DomainExceptions: " << profile.domainExceptions;
-        profile.networkSignature = currentSignature;
-        QDBusPendingReply<> reply = dbusInterface->ConfigureProxy(profile.useProxy, profile.proxyHost, profile.proxyPort, profile.hostExceptions, profile.domainExceptions);
-        if (reply.isValid()) {
-            qDebug() << "Valid";
+        Profile profile =  profiles[action->data().toInt()];
+        activateProfile(profile);
+        if (currentSignature != "") {
+            rememberAssociation(currentSignature, profile.id);
         }
-        else {
-            qDebug() << QDBusError::errorString(reply.error().type());
-        }
-        saveProfiles(profiles);
-    }
+   }
 }
+
+void TrayIcon::activateProfile(const Profile& profile) {
+    qDebug() << "activating: " << profile.name;
+    qDebug() << "id: " << profile.id;
+    qDebug() << "Host: " << profile.proxyHost;
+    qDebug() << "Port: " << profile.proxyPort;
+    qDebug() << "HostExceptions: " << profile.hostExceptions;
+    qDebug() << "DomainExceptions: " << profile.domainExceptions;
+    QDBusPendingReply<> reply = dbusInterface->ConfigureProxy(profile.useProxy, profile.proxyHost, profile.proxyPort, profile.hostExceptions, profile.domainExceptions);
+    if (reply.isValid()) {
+        qDebug() << "Valid";
+    }
+    else {
+        qDebug() << QDBusError::errorString(reply.error().type());
+    }
+
+}
+
+void TrayIcon::rememberAssociation(QString networkSignature, QString profileId) {
+   QVariantMap associations = settings.value("associations", QVariantMap()).toMap();
+   associations[networkSignature] = profileId;
+   settings.setValue("associations", associations);
+}
+
 
 void TrayIcon::manageProfiles() {
   ProfileManager profileManager(loadProfiles());
@@ -109,11 +127,16 @@ void TrayIcon::networkChanged(QString newNetworkSignature) {
         return;
     }
 
+    QVariantMap associations = settings.value("associations", QVariantMap()).toMap();
+
+    QString profileId = associations.value(currentSignature).toString();
     QList<Profile> profiles = loadProfiles();
     for (int i = 0; i < profiles.size(); i++) {
-        qDebug() << "Comparing " << newNetworkSignature << " with " << profiles.at(i).networkSignature;
-        if (newNetworkSignature == profiles.at(i).networkSignature) {
+        qDebug() << "Comparing " << profileId << " with " << profiles.at(i).id;
+        if (newNetworkSignature == profiles.at(i).id) {
             qDebug() << "Switching to " << profiles.at(i).name;
+            activateProfile(profiles.at(i));
+            return;
         }
     }
 }
