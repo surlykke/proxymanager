@@ -9,7 +9,7 @@
 #include <iostream>
 
 ProxyManagerDaemon::ProxyManagerDaemon(int argc, char* argv[])
-    : QCoreApplication(argc, argv), resolvConfWatcher(QStringList("/etc/resolv.conf")) {
+    : QCoreApplication(argc, argv), resolvConfWatcher(QStringList("/etc/resolv.conf")), currentNetworkSignature("") {
     connect(&resolvConfWatcher, SIGNAL(fileChanged(QString)), this, SLOT(fileChanged(QString)));
     QString signature = networkSignature();
     emit NetworkChanged(signature);
@@ -62,8 +62,11 @@ void ProxyManagerDaemon::configureProxy(bool use_proxy, const QString &host, ush
 void ProxyManagerDaemon::fileChanged(QString path) {
     qDebug() << "FileChanged(" << path << ")";
     QString signature = networkSignature();
-    qDebug() << "Trying to emit: " << signature;
-    emit NetworkChanged(signature);
+    if (signature != currentNetworkSignature) {
+        qDebug() << "Trying to emit: " << signature;
+        emit NetworkChanged(signature);
+        currentNetworkSignature = signature;
+    }
     if (!resolvConfWatcher.files().contains("/etc/resolv.conf")) {
         resolvConfWatcher.addPath("/etc/resolv.conf");
     }

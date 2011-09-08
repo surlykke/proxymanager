@@ -42,6 +42,7 @@ private:
     QFileSystemWatcher resolvConfWatcher;
     bool notWhiteSpace(QString& string);
 
+    QString currentNetworkSignature;
 };
 
 #endif
