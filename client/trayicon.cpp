@@ -18,10 +18,10 @@ TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent), menu(parent), cur
     qDebug() << "dbusInterface created...";
     connect(dbusInterface, SIGNAL(NetworkChanged(QString)), this, SLOT(networkChanged(QString)));
     QDBusReply<QString> signatureReply = dbusInterface->NetworkSignature();
-    if (signatureReply.isValid()) {
-        currentSignature = signatureReply.value();
-    }
     makeContextMenu();
+    if (signatureReply.isValid()) {
+        networkChanged(signatureReply.value());
+    }
 }
 
 void TrayIcon::makeContextMenu() {
