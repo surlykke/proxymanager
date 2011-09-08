@@ -133,9 +133,10 @@ void TrayIcon::networkChanged(QString newNetworkSignature) {
     QList<Profile> profiles = loadProfiles();
     for (int i = 0; i < profiles.size(); i++) {
         qDebug() << "Comparing " << profileId << " with " << profiles.at(i).id;
-        if (newNetworkSignature == profiles.at(i).id) {
+        if (profileId == profiles.at(i).id) {
             qDebug() << "Switching to " << profiles.at(i).name;
             activateProfile(profiles.at(i));
+            menu.actions()[i]->setChecked(true);
             return;
         }
     }
