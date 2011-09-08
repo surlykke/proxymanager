@@ -1,0 +1,44 @@
+Building and Installing
+========================
+To build ProxyManager you need qt libraries and dev-tools.
+On a Debian- or debian-derived distribution you can do:
+
+   sudo apt-get qt4-dev-tools
+
+which should pull what you need.
+
+Then do, in the root of the project:
+
+   qmake
+   make
+   sudo make install
+
+This should build the daemon and the client and install them ind /usr/local/bin. Also, an init-script, 'proxy-manager', is copied to /etc/init.d.
+
+If you want the daemon, proxymanagerd, to start automatically when booting your machine, you can (on Debian) run: 
+
+  sudo update-rc.d proxy-manager defaults
+
+I don't know how to install a service on ubuntu under upstart (or under systemd for that matter).
+
+
+Setting up Squid
+================
+
+Proxy manager expects squid to be installed on your machine and running on port 3128.
+
+Do:
+
+   sudo apt-get install squid
+
+(Note: Squid3 is not really usable, it has to be Squid 2.x)
+
+Proxy manager maintains the file /var/run/proxymanagerd/squid.conf. You must add the following line:
+
+include /var/run/proxymanagerd/squid.conf 
+
+to /etc/squid/squid.conf.
+
+
+
+
