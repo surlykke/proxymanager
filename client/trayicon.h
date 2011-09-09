@@ -10,6 +10,7 @@
 #include "profilemanager.h"
 #include "profile.h"
 #include "dbus_interface.h"
+#include "notifications.h"
 
 class TrayIcon : public QSystemTrayIcon
 {
@@ -38,6 +39,8 @@ public slots:
 
   DBusInterface *dbusInterface;
   QString currentSignature;
+
+  Notifications *notifications;
 
 };
 

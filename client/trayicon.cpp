@@ -19,6 +19,7 @@ TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent), menu(parent), cur
     connect(dbusInterface, SIGNAL(NetworkChanged(QString)), this, SLOT(networkChanged(QString)));
     QDBusReply<QString> signatureReply = dbusInterface->NetworkSignature();
     makeContextMenu();
+    notifications = new Notifications(QDBusConnection::sessionBus(), this);
     if (signatureReply.isValid()) {
         networkChanged(signatureReply.value());
     }
@@ -84,11 +85,21 @@ void TrayIcon::activateProfile(const Profile& profile) {
     qDebug() << "HostExceptions: " << profile.hostExceptions;
     qDebug() << "DomainExceptions: " << profile.domainExceptions;
     QDBusPendingReply<> reply = dbusInterface->ConfigureProxy(profile.useProxy, profile.proxyHost, profile.proxyPort, profile.hostExceptions, profile.domainExceptions);
-    if (reply.isValid()) {
+    if (!reply.isError()) {
         qDebug() << "Valid";
+        QString summary("Proxyconfiguration changed");
+        QString body = "Proxyprofile '" + profile.name + "' " + (profile.useProxy ? ("(" + profile.proxyHost + ":" + QString::number(profile.proxyPort) + ") ") : "") + "activated";
+        notifications->Notify("Proxymanager client",
+                              0,
+                              "",
+                              summary,
+                              body,
+                              QStringList(),
+                              QMap<QString, QVariant>(),
+                              100);
     }
     else {
-        qDebug() << QDBusError::errorString(reply.error().type());
+        qDebug() << "Problem configuring proxy: " << QDBusError::errorString(reply.error().type());
     }
 
 }

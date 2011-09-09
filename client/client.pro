@@ -9,12 +9,14 @@ SOURCES += profilelistmodel.cpp \
     trayicon.cpp \
     profilemanager.cpp \
     profile.cpp \
-    dbus_interface.cpp
+    dbus_interface.cpp \
+    notifications.cpp
 HEADERS += profilelistmodel.h \
     trayicon.h \
     profilemanager.h \
     profile.h \
-    dbus_interface.h
+    dbus_interface.h \
+    notifications.h
 FORMS += profilemanager.ui
 OTHER_FILES += icons/icon.svg
 RESOURCES += \
