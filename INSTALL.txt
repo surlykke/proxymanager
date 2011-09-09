@@ -31,14 +31,40 @@ Do:
 
    sudo apt-get install squid
 
-(Note: Squid3 is not really usable, it has to be Squid 2.x)
+(Note: Squid3 is not really usable for Proxy manager, it has to be Squid 2.x)
 
 Proxy manager maintains the file /var/run/proxymanagerd/squid.conf. You must add the following line:
 
-include /var/run/proxymanagerd/squid.conf 
+   include /var/run/proxymanagerd/squid.conf 
 
 to /etc/squid/squid.conf.
 
+I would advise that you do not manually add cache-parents to squid.conf.
 
 
+Setting up everything to point to your local Squid
+==================================================
+
+Command line stuff
+------------------
+You should have environment variables http_proxy, https_proxy and ftp_proxy pointing to localhost:3128
+
+If you use bash (like me), add these 4 lines
+
+   export http_proxy=http://localhost:3128
+   export https_proxy=http://localhost:3128
+   export ftp_proxy=http://localhost:3128
+   export no_proxy=127.0.0.1,localhost
+
+to ~/.bashrc
+
+You may wanna do the same for root's .bashrc
+
+
+APT
+---
+
+
+Acquire::http::Proxy "http://localhost:3128";
+Acquire::ftp::Proxy "http://localhost:3128";
 
