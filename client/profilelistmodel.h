@@ -33,18 +33,21 @@ public:
   void loadProfiles();
   void saveProfiles();
 
-  int id2pos(QString id);
-  // -------------------
-
 public slots:
   void selectionChanged(QItemSelection selected, QItemSelection deselected);
+  void nameChanged(QString newName);
+  void useProxyChanged(int useProxy);
+  void proxyHostChanged(QString newProxy);
+  void proxyPortChanged(int newPort);
+  void hostExceptionListChanged(QStringList newHostExceptionList);
+  void domainExceptionListChanged(QStringList newDomainExceptionList);
 
 signals:
   void selectedProfileChanged(int newSelectedProfile);
 
 
 private:
-
+  bool pendingChanges;
 };
 
 #endif /* TESTMODEL_H_ */

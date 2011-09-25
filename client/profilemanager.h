@@ -23,7 +23,6 @@ public slots:
   void showProfile(int row);
   void newProfile();
   void deleteProfile();
-  void profileDataChanged();
   void newHostException();
   void deleteHostException();
   void newDomainException();
@@ -42,6 +41,8 @@ private:
   Ui::ProfileManager *m_ui;
   ProfileListModel* profileListModel;
   bool updating_ui;
+
+  QStringList widgetListData(QListWidget *list);
 
   // Debug
   void showProfiles(QString msg = "");

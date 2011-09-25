@@ -5,6 +5,7 @@
 #include <QList>
 #include <QtCore>
 #include <QModelIndex>
+#include <QStringList>
 
 ProfileManager::ProfileManager(ProfileListModel* profileListModel, QWidget * parent) :  QDialog(parent), m_ui(new Ui::ProfileManager) {
     this->profileListModel = profileListModel;
@@ -21,10 +22,10 @@ ProfileManager::ProfileManager(ProfileListModel* profileListModel, QWidget * par
     connect(m_ui->deleteProfileButton, SIGNAL(clicked()), this, SLOT(deleteProfile()));
     connect(m_ui->profileManagerButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_ui->profileManagerButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
-    connect(m_ui->profileNameInput, SIGNAL(textChanged(QString)), this, SLOT(profileDataChanged())); 
-    connect(m_ui->useProxyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(profileDataChanged()));
-    connect(m_ui->proxyHostInput, SIGNAL(textChanged(QString)), this, SLOT(profileDataChanged()));
-    connect(m_ui->proxyPortInput, SIGNAL(valueChanged(int)), this, SLOT(profileDataChanged()));
+    connect(m_ui->profileNameInput, SIGNAL(textChanged(QString)), profileListModel, SLOT(nameChanged(QString)));
+    connect(m_ui->useProxyCheckBox, SIGNAL(stateChanged(int)), profileListModel, SLOT(useProxyChanged(int)));
+    connect(m_ui->proxyHostInput, SIGNAL(editingFinished()), profileListModel, SLOT(proxyHostChanged(QString)));
+    connect(m_ui->proxyPortInput, SIGNAL(editingFinished()), profileListModel, SLOT(proxyPortChanged(int)));
     connect(m_ui->newHostExceptionButton, SIGNAL(clicked()), this, SLOT(newHostException()));
     connect(m_ui->deleteHostExceptionButton, SIGNAL(clicked()), this, SLOT(deleteHostException()));
     connect(m_ui->newDomainExceptionButton, SIGNAL(clicked()), this, SLOT(newDomainException()));
@@ -82,28 +83,7 @@ void ProfileManager::deleteProfile() {
     profileListModel->removeRow(currentSelection(), QModelIndex());
 }
 
-void ProfileManager::profileDataChanged() {
-    if (updating_ui) return;
-    int row = currentSelection();
-    if (row < 0 || row >= profileListModel->profiles.size()) return;
-    qDebug() << "profileDataChanged...";
-    Profile& profile = profileListModel->profiles[row];
-    qDebug() << "updating: " << profile;
-    profile.name = m_ui->profileNameInput->text();
-    profile.useProxy = m_ui->useProxyCheckBox->isChecked();
-    m_ui->proxyData->setEnabled(profile.useProxy);
-    profile.proxyHost = m_ui->proxyHostInput->text();
-    profile.proxyPort = m_ui->proxyPortInput->value();
-    profile.hostExceptions.clear();
-    for (int i = 0; i < m_ui->hostExceptionsList->count(); i++) {
-        profile.hostExceptions << m_ui->hostExceptionsList->item(i)->text();
-    }
-    profile.domainExceptions.clear();
-    for (int i = 0; i < m_ui->domainExceptionsList->count(); i++) {
-        profile.domainExceptions << m_ui->domainExceptionsList->item(i)->text();
-    }
-    qDebug() << "to: " << profile;
-}
+
 
 void ProfileManager::newHostException() {
     bool ok;
@@ -111,17 +91,16 @@ void ProfileManager::newHostException() {
     if (ok && !exception.isEmpty()) {
         int row = m_ui->hostExceptionsList->count();
         m_ui->hostExceptionsList->insertItem(row, exception);
-        profileDataChanged();
-    }
+        profileListModel->hostExceptionListChanged(widgetListData(m_ui->hostExceptionsList));
+   }
 }
-
 
 void ProfileManager::deleteHostException() {
     int row = m_ui->hostExceptionsList->currentRow();
     if (row >= 0) {
         delete m_ui->hostExceptionsList->takeItem(row);
-        profileDataChanged();
-    }
+         profileListModel->hostExceptionListChanged(widgetListData(m_ui->hostExceptionsList));
+   }
 }
 
 void ProfileManager::newDomainException() {
@@ -130,18 +109,17 @@ void ProfileManager::newDomainException() {
     if (ok && !exception.isEmpty()) {
         int row = m_ui->domainExceptionsList->count();
         m_ui->domainExceptionsList->insertItem(row, exception);
-        profileDataChanged();
-    }
+        profileListModel->domainExceptionListChanged(widgetListData(m_ui->domainExceptionsList));
+   }
 }
 
 void ProfileManager::deleteDomainException() {
     int row = m_ui->domainExceptionsList->currentRow();
     if (row >= 0) {
         delete m_ui->domainExceptionsList->takeItem(row);
-        profileDataChanged();
+        profileListModel->domainExceptionListChanged(widgetListData(m_ui->domainExceptionsList));
     }
 }
-
 
 void ProfileManager::changeEvent(QEvent *e) {
     QDialog::changeEvent(e);
@@ -179,4 +157,12 @@ void ProfileManager::accept() {
 void ProfileManager::reject() {
     profileListModel->loadProfiles();
     QDialog::reject();
+}
+
+QStringList ProfileManager::widgetListData(QListWidget *list) {
+    QStringList result;
+    for (int i = 0; i < list->count(); i++) {
+        result << list->item(i)->text();
+    }
+    return result;
 }

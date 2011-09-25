@@ -11,6 +11,7 @@
 ProfileListModel::ProfileListModel(QObject *parent) : QAbstractListModel(parent) {
     loadProfiles();
     selectedProfile = -1;
+    pendingChanges = false;
 }
 
 ProfileListModel::~ProfileListModel() {
@@ -50,6 +51,7 @@ bool ProfileListModel::removeRows(int row, int count, const QModelIndex & parent
         }
         endRemoveRows();
         settings.endGroup();
+        pendingChanges = true;
         return true;
     }
     else {
@@ -63,9 +65,9 @@ void ProfileListModel::newProfile() {
     Profile profile;
     profile.id = QUuid::createUuid();
     profile.name = "Choose a profile name..";
-    profile.save();
     beginInsertRows(QModelIndex(), profiles.size(), profiles.size());
     profiles.append(profile);
+    pendingChanges = true;
     endInsertRows();
     selectProfile(profiles.size() - 1);
 }
@@ -74,36 +76,32 @@ QModelIndex ProfileListModel::currentIndex() {
     return createIndex(selectedProfile, 0);
 }
 
-int ProfileListModel::id2pos(QString id) {
-    for (int i = 0; i < profiles.size(); i++) {
-        if (profiles[i].id == id) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 void ProfileListModel::loadProfiles() {
-    QSettings settings;
-    settings.beginGroup("profiles");
-    QStringList ids = settings.childGroups();
-    for (int i = 0; i < ids.size(); i++) {
-        Profile profile;
-        profile.id = ids[i];
-        profile.load();
-        profiles.append(profile);
+    if (pendingChanges) {
+        QSettings settings;
+        settings.beginGroup("profiles");
+        QStringList ids = settings.childGroups();
+        for (int i = 0; i < ids.size(); i++) {
+            Profile profile;
+            profile.id = ids[i];
+            profile.load();
+            profiles.append(profile);
+        }
+        settings.endGroup();
+        pendingChanges = false;
     }
-    settings.endGroup();
 }
 
 void ProfileListModel::saveProfiles() {
-    QSettings settings;
-    settings.remove("profiles");
-    for (int i = 0; i < profiles.size(); i++) {
-        profiles[i].save();
+    if (pendingChanges) {
+        QSettings settings;
+        settings.remove("profiles");
+        for (int i = 0; i < profiles.size(); i++) {
+            profiles[i].save();
+        }
+        pendingChanges = false;
     }
 }
-
 
 void ProfileListModel::selectProfile(QString profileId) {
     for (int i = 0; i < profiles.size(); i++) {
@@ -131,3 +129,48 @@ void ProfileListModel::selectionChanged(QItemSelection selected, QItemSelection 
     }
 }
 
+void ProfileListModel::nameChanged(QString newName) {
+    if (selectedProfile >= 0 && newName != profiles[selectedProfile].name) {
+        profiles[selectedProfile].name = newName;
+        QModelIndex index = createIndex(selectedProfile, selectedProfile);
+        dataChanged(index, index);
+        pendingChanges = true;
+    }
+}
+
+void ProfileListModel::useProxyChanged(int useProxy) {
+    if (selectedProfile >= 0 && profiles[selectedProfile].useProxy != (useProxy != 0)) {
+        profiles[selectedProfile].useProxy = (useProxy != 0);
+        pendingChanges = true;
+    }
+}
+
+void ProfileListModel::proxyHostChanged(QString newProxyHost) {
+    if (selectedProfile >= 0 && profiles[selectedProfile].proxyHost != newProxyHost) {
+        profiles[selectedProfile].proxyHost = newProxyHost;
+        pendingChanges = true;
+    }
+}
+
+void ProfileListModel::proxyPortChanged(int newPort) {
+    if (selectedProfile >= 0 && profiles[selectedProfile].proxyPort != newPort) {
+        profiles[selectedProfile].proxyPort = newPort;
+        pendingChanges = true;
+    }
+}
+
+void ProfileListModel::hostExceptionListChanged(QStringList newHostExceptionList) {
+    if (selectedProfile >= 0) {
+        profiles[selectedProfile].hostExceptions.clear();
+        profiles[selectedProfile].hostExceptions.append(newHostExceptionList);
+        pendingChanges = true;
+    }
+}
+
+void ProfileListModel::domainExceptionListChanged(QStringList newDomainExceptionList) {
+    if (selectedProfile >= 0) {
+        profiles[selectedProfile].domainExceptions.clear();
+        profiles[selectedProfile].domainExceptions.append(newDomainExceptionList);
+        pendingChanges = true;
+    }
+}
