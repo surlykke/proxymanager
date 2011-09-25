@@ -1,41 +1,50 @@
 #include "profile.h"
 
-Profile::Profile()
-{
+void Profile::load() {
+    QSettings settings;
+    settings.beginGroup("profiles");
+    settings.beginGroup(id);
+    name = settings.value("name").toString();
+    useProxy = settings.value("useProxy").toBool();
+    proxyHost = settings.value("proxyHost").toString();
+    proxyPort = settings.value("proxyPort").toInt();
+    hostExceptions = settings.value("hostExceptions").toStringList();
+    domainExceptions = settings.value("domainExceptions").toStringList();
+    settings.endGroup();
+    settings.endGroup();
 }
 
-Profile::Profile(QMap<QString, QVariant> serialized) {
-    id = serialized["id"].toString();
-    name = serialized["name"].toString();
-    useProxy = serialized["useProxy"].toBool();
-    proxyHost = serialized["proxyHost"].toString();
-    proxyPort = serialized["proxyPort"].toInt();
-    hostExceptions = serialized["hostExceptions"].toStringList();
-    domainExceptions = serialized["domainExceptions"].toStringList();
+void Profile::save() {
+    qDebug() << "Saving " << *this;
+    QSettings settings;
+    settings.beginGroup("profiles");
+    settings.beginGroup(id);
+    settings.setValue("name", name);
+    settings.setValue("useProxy", useProxy);
+    settings.setValue("proxyHost", proxyHost);
+    settings.setValue("proxyPort", proxyPort);
+    settings.setValue("hostExceptions", QVariant(hostExceptions));
+    settings.setValue("domainExceptions", QVariant(domainExceptions));
+    settings.endGroup();
+    settings.endGroup();
 }
 
-Profile::~Profile() {
+void Profile::remove() {
+    QSettings settings;
+    settings.beginGroup("profiles");
+    settings.remove(id);
+    settings.endGroup();
+    id = "";
 }
 
-QMap<QString, QVariant> Profile::serialize() {
-  QMap<QString, QVariant> result;
-  result["id"] = id;
-  result["name"] = name;
-  result["useProxy"] = useProxy;
-  result["proxyHost"] = proxyHost;
-  result["proxyPort"] = proxyPort;
-  result["hostExceptions"] = hostExceptions;
-  result["domainExceptions"] = domainExceptions;
-  return result;
-}
+QDebug operator<<(QDebug dbg, const Profile& profile) {
+    dbg.nospace()  << "{id: " << profile.id
+                   << ", name: " << profile.name
+                   << ", useProxy: " << profile.useProxy
+                   << ", proxyHost: " << profile.proxyHost
+                   << ", proxyPort: " << profile.proxyPort
+                   << ", hostExceptions: " << profile.hostExceptions
+                   << ", domainExceptions: " << profile.domainExceptions << "}";
 
-void Profile::copy(Profile &otherProfile) {
-  this->id = otherProfile.id;
-  this->name = otherProfile.name;
-  this->useProxy = otherProfile.useProxy;
-  this->proxyHost = otherProfile.proxyHost;
-  this->proxyPort = otherProfile.proxyPort;
-  this->hostExceptions = otherProfile.hostExceptions;
-  this->domainExceptions = otherProfile.domainExceptions;
+    return dbg.space();
 }
-

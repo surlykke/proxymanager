@@ -16,13 +16,11 @@ class ProfileManager : public QDialog {
   Q_OBJECT
 
 public:
-  ProfileManager(QList<Profile> profiles, QWidget * parent = 0);
+  ProfileManager(ProfileListModel* profileListModel, QWidget * parent = 0);
   ~ProfileManager();
-  QList<Profile> & getProfiles();
-
 
 public slots:
-  void selectionChanged(QItemSelection selected, QItemSelection deselected);
+  void showProfile(int row);
   void newProfile();
   void deleteProfile();
   void profileDataChanged();
@@ -31,6 +29,10 @@ public slots:
   void newDomainException();
   void deleteDomainException(); 
 
+  virtual void accept();
+  virtual void reject();
+
+
 protected:
   void changeEvent(QEvent *e);
 
@@ -38,8 +40,8 @@ private:
   int currentSelection();
 
   Ui::ProfileManager *m_ui;
-  ProfileListModel profileListModel;
-  bool m_doing_selection_change;
+  ProfileListModel* profileListModel;
+  bool updating_ui;
 
   // Debug
   void showProfiles(QString msg = "");

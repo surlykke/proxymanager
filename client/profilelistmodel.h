@@ -13,7 +13,7 @@
 class ProfileListModel : public QAbstractListModel {
   Q_OBJECT
 public:
-  ProfileListModel(QList<Profile> & profiles, QObject *parent = 0);
+  ProfileListModel(QObject *parent = 0);
   virtual ~ProfileListModel();
 
   // Implement methods defined in QAbstractListModel
@@ -22,15 +22,28 @@ public:
   virtual bool removeRows(int row, int count, const QModelIndex & parent = QModelIndex());
   // -----------------------------------------------
 
-  // Some access methods
-  Profile & operator[](int row);
-  void profileUpdated(int row);
-  QModelIndex addProfile();
-  QList<Profile> & getProfiles();
+  void newProfile();
+  QModelIndex currentIndex();
+  QList<Profile> profiles;
+  int selectedProfile;
+
+  void selectProfile(QString profileId);
+  void selectProfile(int row);
+
+  void loadProfiles();
+  void saveProfiles();
+
+  int id2pos(QString id);
   // -------------------
 
+public slots:
+  void selectionChanged(QItemSelection selected, QItemSelection deselected);
+
+signals:
+  void selectedProfileChanged(int newSelectedProfile);
+
+
 private:
-  QList<Profile> m_profileList;
 
 };
 

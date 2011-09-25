@@ -14,34 +14,36 @@
 
 class TrayIcon : public QSystemTrayIcon
 {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  TrayIcon(QWidget* parent = 0);
-  void makeContextMenu();
+    TrayIcon(QWidget* parent = 0);
+    void makeContextMenu();
 
 private:
-  QList<Profile> loadProfiles();
-  void saveProfiles(QList<Profile> &profiles);
-  QMenu menu;
-  QSettings settings;
+    QList<Profile> loadProfiles();
+    void saveProfiles(QList<Profile> &profiles);
+    QMenu menu;
+    QSettings settings;
 
 public slots:
-  void activateProfile(QAction* action);
-  void activateProfile(const Profile& profile);
-  void rememberAssociation(QString networkSignature, QString profileId);
+    void activateProfile(QAction* action);
+    void activateProfile(const Profile& profile);
+    void rememberAssociation(QString networkSignature, QString profileId);
+    QString profileId4signature(QString networkSignature);
 
-  void manageProfiles();
-  void exitProxyManager();
-  void networkChanged(QString key);
+    void manageProfiles();
+    void exitProxyManager();
+    void networkChanged(QString key);
 
-  private:
+private:
 
-  DBusInterface *dbusInterface;
-  QString currentSignature;
+    DBusInterface *dbusInterface;
+    QString currentSignature;
+    QString currentProfileId;
+    Notifications *notifications;
 
-  Notifications *notifications;
-
+    ProfileListModel profileListModel;
 };
 
 #endif // TRAYICON_H

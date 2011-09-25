@@ -1,23 +1,16 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 #include <QtCore>
+#include <QDebug>
 #include <QVariant>
 #include <QMap>
 #include <QString>
 #include <QStringListModel>
 
-class Profile
+struct Profile
 {
-public:
-    Profile();
-    Profile(QMap<QString, QVariant> serialized);
-    ~Profile();
 
-    QMap<QString, QVariant> serialize();
-
-    void copy(Profile & otherProfile);
-
-    QString id;
+    QString id; // Don't touch
     QString name; 
     bool useProxy;
     QString proxyHost;
@@ -25,6 +18,13 @@ public:
     QStringList hostExceptions;
     QStringList domainExceptions;
 
+    void save();
+    void load();
+    void remove();
+
+
 };
+
+QDebug operator<<(QDebug dbg, const Profile &c);
 
 #endif // PROFILE_H
