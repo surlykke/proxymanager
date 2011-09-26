@@ -10,7 +10,7 @@
 
 ProfileListModel::ProfileListModel(QObject *parent) : QAbstractListModel(parent) {
     loadProfiles();
-    selectedProfile = -1;
+    selectedProfile = 0;
     pendingChanges = false;
 }
 
@@ -73,7 +73,12 @@ void ProfileListModel::newProfile() {
 }
 
 QModelIndex ProfileListModel::currentIndex() {
-    return createIndex(selectedProfile, 0);
+    for (int i = 0; i < profiles.size(); i++) {
+        if (selectedProfile->id == profiles[i].id) {
+            return createIndex(i, 0);
+        }
+    }
+    return QModelIndex();
 }
 
 void ProfileListModel::loadProfiles() {
@@ -106,18 +111,19 @@ void ProfileListModel::saveProfiles() {
 void ProfileListModel::selectProfile(QString profileId) {
     for (int i = 0; i < profiles.size(); i++) {
         if (profiles[i].id == profileId) {
-            selectProfile(i);
+            selectedProfile = &profiles[i];
             return;
         }
     }
+    selectedProfile = 0;
 }
 
 void ProfileListModel::selectProfile(int row) {
     if (row < 0 || row >= profiles.size()) {
-        selectedProfile = -1;
+        selectedProfile = 0;
     }
     else {
-        selectedProfile = row;
+        selectedProfile = &profiles[row];
     }
     emit selectedProfileChanged(selectedProfile);
 }
@@ -130,47 +136,47 @@ void ProfileListModel::selectionChanged(QItemSelection selected, QItemSelection 
 }
 
 void ProfileListModel::nameChanged(QString newName) {
-    if (selectedProfile >= 0 && newName != profiles[selectedProfile].name) {
-        profiles[selectedProfile].name = newName;
-        QModelIndex index = createIndex(selectedProfile, selectedProfile);
+    if (selectedProfile != 0 && newName != selectedProfile->name) {
+        selectedProfile->name = newName;
+        QModelIndex index = currentIndex();
         dataChanged(index, index);
         pendingChanges = true;
     }
 }
 
 void ProfileListModel::useProxyChanged(int useProxy) {
-    if (selectedProfile >= 0 && profiles[selectedProfile].useProxy != (useProxy != 0)) {
-        profiles[selectedProfile].useProxy = (useProxy != 0);
+    if (selectedProfile != 0 && selectedProfile->useProxy != (useProxy != 0)) {
+        selectedProfile->useProxy = (useProxy != 0);
         pendingChanges = true;
     }
 }
 
 void ProfileListModel::proxyHostChanged(QString newProxyHost) {
-    if (selectedProfile >= 0 && profiles[selectedProfile].proxyHost != newProxyHost) {
-        profiles[selectedProfile].proxyHost = newProxyHost;
+    if (selectedProfile != 0 && selectedProfile->proxyHost != newProxyHost) {
+        selectedProfile->proxyHost = newProxyHost;
         pendingChanges = true;
     }
 }
 
 void ProfileListModel::proxyPortChanged(int newPort) {
-    if (selectedProfile >= 0 && profiles[selectedProfile].proxyPort != newPort) {
-        profiles[selectedProfile].proxyPort = newPort;
+    if (selectedProfile != 0 && selectedProfile->proxyPort != newPort) {
+        selectedProfile->proxyPort = newPort;
         pendingChanges = true;
     }
 }
 
 void ProfileListModel::hostExceptionListChanged(QStringList newHostExceptionList) {
-    if (selectedProfile >= 0) {
-        profiles[selectedProfile].hostExceptions.clear();
-        profiles[selectedProfile].hostExceptions.append(newHostExceptionList);
+    if (selectedProfile != 0) {
+        selectedProfile->hostExceptions.clear();
+        selectedProfile->hostExceptions.append(newHostExceptionList);
         pendingChanges = true;
     }
 }
 
 void ProfileListModel::domainExceptionListChanged(QStringList newDomainExceptionList) {
-    if (selectedProfile >= 0) {
-        profiles[selectedProfile].domainExceptions.clear();
-        profiles[selectedProfile].domainExceptions.append(newDomainExceptionList);
+    if (selectedProfile != 0) {
+        selectedProfile->domainExceptions.clear();
+        selectedProfile->domainExceptions.append(newDomainExceptionList);
         pendingChanges = true;
     }
 }

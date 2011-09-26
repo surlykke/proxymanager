@@ -17,7 +17,7 @@ ProfileManager::ProfileManager(ProfileListModel* profileListModel, QWidget * par
     m_ui->profileList->setModel(profileListModel);
     connect(m_ui->profileList->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
             profileListModel, SLOT(selectionChanged(QItemSelection, QItemSelection)));
-    connect(profileListModel, SIGNAL(selectedProfileChanged(int)), this, SLOT(showProfile(int)));
+    connect(profileListModel, SIGNAL(selectedProfileChanged(Profile*)), this, SLOT(showProfile(Profile*)));
     connect(m_ui->newProfileButton, SIGNAL(clicked()), this, SLOT(newProfile()));
     connect(m_ui->deleteProfileButton, SIGNAL(clicked()), this, SLOT(deleteProfile()));
     connect(m_ui->profileManagerButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
@@ -41,22 +41,21 @@ ProfileManager::~ProfileManager() {
 }
 
 
-void ProfileManager::showProfile(int row) {
+void ProfileManager::showProfile(Profile* profile) {
     updating_ui = true;
-    if (row >= 0) {
-        Profile& profile = profileListModel->profiles[row];
-        qDebug() << "Showing profile: " << profile;
+    if (profile != 0) {
+        qDebug() << "Showing profile: " << *profile;
         m_ui->deleteProfileButton->setEnabled(true);
         m_ui->profileBox->setEnabled(true);
-        m_ui->profileNameInput->setText(profile.name);
-        m_ui->useProxyCheckBox->setChecked(profile.useProxy);
-        m_ui->proxyData->setEnabled(profile.useProxy);
-        m_ui->proxyHostInput->setText(profile.proxyHost);
-        m_ui->proxyPortInput->setValue(profile.proxyPort);
+        m_ui->profileNameInput->setText(profile->name);
+        m_ui->useProxyCheckBox->setChecked(profile->useProxy);
+        m_ui->proxyData->setEnabled(profile->useProxy);
+        m_ui->proxyHostInput->setText(profile->proxyHost);
+        m_ui->proxyPortInput->setValue(profile->proxyPort);
         m_ui->hostExceptionsList->clear();
-        m_ui->hostExceptionsList->addItems(profile.hostExceptions);
+        m_ui->hostExceptionsList->addItems(profile->hostExceptions);
         m_ui->domainExceptionsList->clear();
-        m_ui->domainExceptionsList->addItems(profile.domainExceptions);
+        m_ui->domainExceptionsList->addItems(profile->domainExceptions);
     }
     else {
         // Disable all

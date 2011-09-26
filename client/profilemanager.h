@@ -37,7 +37,7 @@ public:
   ~ProfileManager();
 
 public slots:
-  void showProfile(int row);
+  void showProfile(Profile *profile);
   void newProfile();
   void deleteProfile();
   void newHostException();

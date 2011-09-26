@@ -35,7 +35,7 @@ public:
   void newProfile();
   QModelIndex currentIndex();
   QList<Profile> profiles;
-  int selectedProfile;
+  Profile* selectedProfile;
 
   void selectProfile(QString profileId);
   void selectProfile(int row);
@@ -53,7 +53,7 @@ public slots:
   void domainExceptionListChanged(QStringList newDomainExceptionList);
 
 signals:
-  void selectedProfileChanged(int newSelectedProfile);
+  void selectedProfileChanged(Profile* newSelectedProfile);
 
 
 private:

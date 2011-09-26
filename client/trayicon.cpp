@@ -34,7 +34,8 @@ void TrayIcon::makeContextMenu() {
     profileAction->setData(i);
     profileAction->setCheckable(true);
     profileGroup->addAction(profileAction);
-    if (i == profileListModel.selectedProfile) {
+    if (profileListModel.selectedProfile != 0 &&
+        profileListModel.profiles[i].id == profileListModel.selectedProfile->id) {
         profileAction->setChecked(true);
     }
   }
@@ -55,9 +56,9 @@ void TrayIcon::activateProfile(QAction* action) {
     if (action->data().type() == QVariant::Int) {
         profileListModel.selectProfile(action->data().toInt());
         if (profileListModel.selectedProfile >= 0) {
-            activateProfile(profileListModel.profiles[profileListModel.selectedProfile]);
+            activateProfile(*(profileListModel.selectedProfile));
             if (currentSignature != "") {
-                rememberAssociation(currentSignature, profileListModel.profiles[profileListModel.selectedProfile].id);
+                rememberAssociation(currentSignature, profileListModel.selectedProfile->id);
             }
         }
     }
@@ -113,7 +114,7 @@ void TrayIcon::manageProfiles() {
     if (profileManager.exec() == QDialog::Accepted) {
         profileListModel.selectProfile(currentProfileId);
         if (profileListModel.selectedProfile >= 0) { // FIXME check if it actually changed
-            activateProfile(profileListModel.profiles[profileListModel.selectedProfile]);
+            activateProfile(*(profileListModel.selectedProfile));
         }
         makeContextMenu();
     }
@@ -132,7 +133,7 @@ void TrayIcon::networkChanged(QString newNetworkSignature) {
     currentProfileId = profileId4signature(currentSignature);
     profileListModel.selectProfile(currentProfileId);
     if (profileListModel.selectedProfile >= 0) {
-        activateProfile(profileListModel.profiles[profileListModel.selectedProfile]);
+        activateProfile(*(profileListModel.selectedProfile));
         makeContextMenu();
     }
 }
