@@ -55,7 +55,7 @@ void TrayIcon::makeContextMenu() {
 void TrayIcon::activateProfile(QAction* action) {
     if (action->data().type() == QVariant::Int) {
         profileListModel.selectProfile(action->data().toInt());
-        if (profileListModel.selectedProfile >= 0) {
+        if (profileListModel.selectedProfile != 0) {
             activateProfile(*(profileListModel.selectedProfile));
             if (currentSignature != "") {
                 rememberAssociation(currentSignature, profileListModel.selectedProfile->id);
@@ -113,7 +113,7 @@ void TrayIcon::manageProfiles() {
     profileManager.setAttribute(Qt::WA_QuitOnClose, false);
     if (profileManager.exec() == QDialog::Accepted) {
         profileListModel.selectProfile(currentProfileId);
-        if (profileListModel.selectedProfile >= 0) { // FIXME check if it actually changed
+        if (profileListModel.selectedProfile != 0) { // FIXME check if it actually changed
             activateProfile(*(profileListModel.selectedProfile));
         }
         makeContextMenu();
@@ -132,7 +132,7 @@ void TrayIcon::networkChanged(QString newNetworkSignature) {
 
     currentProfileId = profileId4signature(currentSignature);
     profileListModel.selectProfile(currentProfileId);
-    if (profileListModel.selectedProfile >= 0) {
+    if (profileListModel.selectedProfile != 0) {
         activateProfile(*(profileListModel.selectedProfile));
         makeContextMenu();
     }
