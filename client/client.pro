@@ -30,7 +30,7 @@ HEADERS += profilelistmodel.h \
     dbus_interface.h \
     notifications.h
 FORMS += profilemanager.ui
-OTHER_FILES += icons/icon.svg
+OTHER_FILES += icons/icon.png
 RESOURCES += \
     client.qrc
 

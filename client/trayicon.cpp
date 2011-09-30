@@ -10,7 +10,7 @@
 #include "profile.h"
 
 TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent), menu(parent), currentSignature("") {
-    setIcon(QIcon(":icons/icon.svg"));
+    setIcon(QIcon(":icons/icon.png"));
     setContextMenu(&menu);
     connect(contextMenu(), SIGNAL(triggered(QAction*)), this, SLOT(activateProfile(QAction*)));;
     qDebug() << "Create dbusInterface";
