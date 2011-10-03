@@ -70,7 +70,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
      inkscape:cx="-165"
-     inkscape:cy="748.57143"
+     inkscape:cy="804.33006"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -104,7 +104,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -121,7 +121,10 @@
        sodipodi:cy="356.64789"
        sodipodi:rx="137.14285"
        sodipodi:ry="132.85715"
-       d="m 594.28571,356.64789 a 137.14285,132.85715 0 1 1 -274.28571,0 137.14285,132.85715 0 1 1 274.28571,0 z" />
+       d="m 594.28571,356.64789 a 137.14285,132.85715 0 1 1 -274.28571,0 137.14285,132.85715 0 1 1 274.28571,0 z"
+       inkscape:export-filename="/home/christian/projekter/ProxyManager/client/icons/icon.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:type="arc"
        style="opacity:0.84615383;fill:#172394;fill-opacity:0.97551018;stroke:#008080"
@@ -131,6 +134,9 @@
        sodipodi:rx="137.14285"
        sodipodi:ry="132.85715"
        d="m 594.28571,356.64789 a 137.14285,132.85715 0 1 1 -274.28571,0 137.14285,132.85715 0 1 1 274.28571,0 z"
-       transform="matrix(1.549568,0,0,1.5460678,-206.94535,-136.18254)" />
+       transform="matrix(1.549568,0,0,1.5460678,-206.94535,-136.18254)"
+       inkscape:export-filename="/home/christian/projekter/ProxyManager/client/icons/icon.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
 </svg>

@@ -49,13 +49,13 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Reset squid config
-    QFile configFile(SQUID_CONF_PATH);
-    if (! configFile.open(QIODevice::Truncate | QIODevice::WriteOnly)) {
-        std::cerr << "Could not open " << SQUID_CONF_PATH << "\n";
+    // Reset proxy rules
+    QFile rulesFile(PROXY_RULES_PATH);
+    if (! rulesFile.open(QIODevice::Truncate | QIODevice::WriteOnly)) {
+        std::cerr << "Could not open " << PROXY_RULES_PATH << "\n";
         return 1;
-        configFile.close();
-        system("squid -k reconfigure");
+        rulesFile.close();
+        system("apachectl graceful");
     }
 
     // Daemonize

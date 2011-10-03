@@ -25,7 +25,6 @@
 
 const static char* RUN_DIR_PATH =    "/var/run/proxymanagerd";
 const static char* PID_FILE_PATH =   "/var/run/proxymanagerd/pid";
-const static char* SQUID_CONF_PATH = "/var/run/proxymanagerd/squid.conf";
-
+const static char* PROXY_RULES_PATH = "/var/run/proxymanagerd/rules";
 
 #endif // PROXY_MANAGER_CONSTS_H

@@ -37,10 +37,10 @@ ProxyManagerDaemon::~ProxyManagerDaemon() {
 
 void ProxyManagerDaemon::configureProxy(bool use_proxy, const QString &host, ushort port, const QStringList &host_exceptions, const QStringList &domain_exceptions) {
     qDebug() << "configureProxy(" << use_proxy << ", " << host << ", " << port << ", " << host_exceptions << ", " << domain_exceptions << ");";
-    QFile file(SQUID_CONF_PATH);
+    /*QFile file(SQUID_CONF_PATH);
     qDebug() << "Opening " << SQUID_CONF_PATH;
     if (file.open(QIODevice::Truncate | QIODevice::WriteOnly)) {
-        QTextStream stream(&file);
+        QTextStrream stream(&file);
         if (use_proxy) {
             stream << "cache_peer " << host << " parent " << port << " 0 default\n";
 
@@ -69,6 +69,30 @@ void ProxyManagerDaemon::configureProxy(bool use_proxy, const QString &host, ush
         file.close();
         qDebug() << "Reconfigure squid";
         system("squid -k reconfigure");
+    }*/
+    QFile file(PROXY_RULES_PATH);
+    if (file.open(QIODevice::Truncate | QIODevice::WriteOnly)) {
+        QTextStream stream(&file);
+        if (use_proxy) {
+            stream << "ProxyRemote * http://" << host << ":" << port << "\n";
+            if (domain_exceptions.size() > 0 || host_exceptions.size() > 0) {
+                stream << "NoProxy ";
+                for (int i = 0; i < domain_exceptions.size(); i++) {
+                    stream << domain_exceptions.at(i) << " ";
+                }
+                for (int i = 0; i < host_exceptions.size(); i++) {
+                    stream << host_exceptions.at(i) << " ";
+                }
+                stream << "\n";
+            }
+        }
+        else {
+            stream << "# Direct\n";
+        }
+        file.close();
+        qDebug() << "Reload apache configuration";
+        system("apachectl graceful");
+
     }
     else {
         std::cerr << "Could not open " << PID_FILE_PATH << "\n";

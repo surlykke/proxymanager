@@ -37,11 +37,22 @@ HEADERS += \
 
 OTHER_FILES += \
     proxy-manager \
-    proxy_manager_interface.xml
+    proxy_manager_interface.xml \
+    apache.conf
 
 target.path = /usr/local/bin
 
 init.path = /etc/init.d
 init.files = proxy-manager
 
-INSTALLS += target init
+apacheconfig.path = /etc/proxymanagerd/
+apacheconfig.files = apache.conf
+apacheconfig.extra = ln -sf /etc/proxymanagerd/apache.conf /etc/apache2/conf.d/proxymanager.conf;
+apacheconfig.extra += mkdir -p /var/run/proxymanagerd;
+apacheconfig.extra += touch /var/run/proxymanagerd/rules;
+
+INSTALLS += target init apacheconfig
+
+
+
+
