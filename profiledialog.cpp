@@ -35,6 +35,16 @@ ProfileDialog::ProfileDialog(QString selectedProfileId, ProfileListModel* profil
     connect(m_ui->profileManagerButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_ui->profileManagerButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
+
+    connect(m_ui->useHttpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpProxyHostInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useHttpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpProxyPortInput, SLOT(setEnabled(bool)));
+
+    connect(m_ui->useHttpsProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpsProxyHostInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useHttpsProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpsProxyPortInput, SLOT(setEnabled(bool)));
+
+    connect(m_ui->useFtpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->ftpProxyHostInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useFtpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->ftpProxyPortInput, SLOT(setEnabled(bool)));
+
     for (int row = 0; row < profileListModel->rowCount(); row++) {
         if (profileListModel->id(row) == selectedProfileId) {
             select(row);
@@ -72,6 +82,7 @@ void ProfileDialog::deleteProfile() {
 }
 
 void ProfileDialog::sameProxy() {
+    m_ui->sameProxyButton->setFocus();
     profileListModel->sameProxy(mapper->currentIndex());
 }
 

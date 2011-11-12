@@ -67,10 +67,17 @@ p, li { white-space: pre-wrap; }
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QLineEdit" name="httpProxyHostInput"/>
+      <widget class="QLineEdit" name="httpProxyHostInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
      <item row="0" column="4">
       <widget class="QSpinBox" name="httpProxyPortInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="maximum">
         <number>65535</number>
        </property>
@@ -105,7 +112,11 @@ p, li { white-space: pre-wrap; }
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="QLineEdit" name="httpsProxyHostInput"/>
+      <widget class="QLineEdit" name="httpsProxyHostInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
      <item row="1" column="3">
       <widget class="QLabel" name="label_17">
@@ -116,6 +127,9 @@ p, li { white-space: pre-wrap; }
      </item>
      <item row="1" column="4">
       <widget class="QSpinBox" name="httpsProxyPortInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="maximum">
         <number>65535</number>
        </property>
@@ -136,7 +150,11 @@ p, li { white-space: pre-wrap; }
       </widget>
      </item>
      <item row="2" column="2">
-      <widget class="QLineEdit" name="ftpProxyHostInput"/>
+      <widget class="QLineEdit" name="ftpProxyHostInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
      <item row="2" column="3">
       <widget class="QLabel" name="label_5">
@@ -147,6 +165,9 @@ p, li { white-space: pre-wrap; }
      </item>
      <item row="2" column="4">
       <widget class="QSpinBox" name="ftpProxyPortInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="maximum">
         <number>65535</number>
        </property>
