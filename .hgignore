@@ -1,1 +1,2 @@
-ProxyManager.pro.user
+syntax: glob
+pm_client.pro.user

@@ -20,50 +20,38 @@
 
 #include <QtGui/QDialog>
 #include <QtCore>
+#include <QDataWidgetMapper>
 #include <QMap>
 #include <QtGui>
 #include "profilelistmodel.h"
-#include "profile.h"
 
 namespace Ui {
     class ProfileManager;
 }
 
-class ProfileManager : public QDialog {
+class ProfileDialog : public QDialog {
   Q_OBJECT
 
 public:
-  ProfileManager(ProfileListModel* profileListModel, QWidget * parent = 0);
-  ~ProfileManager();
+  ProfileDialog(QString selectedProfileId, ProfileListModel* profileListModel, QWidget * parent = 0);
+  ~ProfileDialog();
 
 public slots:
-  void showProfile(Profile *profile);
   void newProfile();
   void deleteProfile();
-  void newHostException();
-  void deleteHostException();
-  void newDomainException();
-  void deleteDomainException(); 
-
+  void sameProxy();
+  void selectionChanged(QItemSelection start, QItemSelection end);
   virtual void accept();
   virtual void reject();
 
 
-protected:
-  void changeEvent(QEvent *e);
-
 private:
   int currentSelection();
+  void select(int row, bool edit = false);
 
   Ui::ProfileManager *m_ui;
   ProfileListModel* profileListModel;
-  bool updating_ui;
-
-  QStringList widgetListData(QListWidget *list);
-
-  // Debug
-  void showProfiles(QString msg = "");
-
+  QDataWidgetMapper *mapper;
 
 };
 

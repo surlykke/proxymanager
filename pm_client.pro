@@ -13,26 +13,20 @@
 
 # You should have received a copy of the GNU General Public License
 # along with PitchTrainer.  If not, see <http://www.gnu.org/licenses/>.
-QT += dbus
+QT += dbus xml network
 TARGET = pm_client
 TEMPLATE = app
 SOURCES += profilelistmodel.cpp \
     main.cpp \
     trayicon.cpp \
-    profilemanager.cpp \
-    profile.cpp \
-    dbus_interface.cpp \
-    notifications.cpp
+    profiledialog.cpp
 HEADERS += profilelistmodel.h \
     trayicon.h \
-    profilemanager.h \
-    profile.h \
-    dbus_interface.h \
-    notifications.h
+    profiledialog.h
 FORMS += profilemanager.ui
 OTHER_FILES += icons/icon.png
 RESOURCES += \
     client.qrc
-
+LIBS += -L/usr/lib/ -lqjson
 target.path = /usr/local/bin
 INSTALLS += target

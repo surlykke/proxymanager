@@ -15,16 +15,35 @@
   You should have received a copy of the GNU General Public License
   along with PitchTrainer.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef PROXY_MANAGER_CONSTS_H
-#define PROXY_MANAGER_CONSTS_H
-#include <QString>
+#ifndef TRAYICON_H
+#define TRAYICON_H
 
-/*#define VAR_RUN_DIR "/var/run/proxymanagerd"
-#define PID_FILE_PATH "/var/run/proxymanagerd/pid"
-#define SQUID_CONF_PATH "/var/run/proxymanagerd/squid.conf"*/
+#include <QSystemTrayIcon>
+#include <QMenu>
+#include <QList>
+#include <QObject>
+#include <QProcess>
+#include <QTemporaryFile>
+#include "profiledialog.h"
+#include <QtNetwork/QNetworkRequest>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 
-const static char* RUN_DIR_PATH =    "/var/run/proxymanagerd";
-const static char* PID_FILE_PATH =   "/var/run/proxymanagerd/pid";
-const static char* PROXY_RULES_PATH = "/var/run/proxymanagerd/rules";
 
-#endif // PROXY_MANAGER_CONSTS_H
+class TrayIcon : public QSystemTrayIcon
+{
+    Q_OBJECT
+
+public:
+    TrayIcon(QWidget* parent = 0);
+    void makeContextMenu();
+
+public slots:
+    void manageProfiles();
+    void exitProxyManager();
+
+private:
+    ProfileListModel profileListModel;
+};
+
+#endif // TRAYICON_H
