@@ -26,7 +26,7 @@ HEADERS += profilelistmodel.h \
 FORMS += profilemanager.ui
 OTHER_FILES += icons/icon.png
 RESOURCES += \
-    client.qrc
+    pm_client.qrc
 LIBS += -L/usr/lib/ -lqjson
 target.path = /usr/local/bin
 INSTALLS += target
