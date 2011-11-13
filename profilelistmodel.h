@@ -55,14 +55,25 @@ public:
 
     void sameProxy(int row);
 
-    void loadProfiles();
-    void saveProfiles();
+
 
     QString id(int row);
     QString name(int row);
+    QString errorMsg;
 
-public slots:
-    void newProfile();
+    bool newProfile();
+    void deleteProfile(int row);
+    bool commit();
+    bool rollback();
+
+private:
+    void append(QVariantMap &profile);
+    QVariantMap row2Map(int row);
+
+    bool loadProfiles();
+
+    QList<QString> createdProfiles;
+    QList<QString> pendingDeletes;
 };
 
 #endif /* TESTMODEL_H_ */

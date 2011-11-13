@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <QStandardItemModel>
 #include <QStandardItem>
+#include <QMessageBox>
 
 ProfileDialog::ProfileDialog(QString selectedProfileId, ProfileListModel* profileListModel, QWidget * parent) :  QDialog(parent), m_ui(new Ui::ProfileManager) {
     this->profileListModel = profileListModel;
@@ -73,12 +74,17 @@ void ProfileDialog::selectionChanged(QItemSelection selected, QItemSelection des
 }
 
 void ProfileDialog::newProfile() {
-    profileListModel->newProfile();
-    select(profileListModel->rowCount() - 1, true);
+   if (profileListModel->newProfile()) {
+        select(profileListModel->rowCount() - 1, true);
+   }
+   else {
+       QMessageBox(QMessageBox::Critical, "Error creating new profile...", profileListModel->errorMsg, QMessageBox::NoButton, this).exec();
+   }
+
 }
 
 void ProfileDialog::deleteProfile() {
-    profileListModel->removeRow(currentSelection(), QModelIndex());
+    profileListModel->deleteProfile(currentSelection());
 }
 
 void ProfileDialog::sameProxy() {
@@ -99,17 +105,18 @@ int ProfileDialog::currentSelection() {
 
 
 void ProfileDialog::accept() {
-    profileListModel->saveProfiles();
+    profileListModel->commit();
     QDialog::accept();
 }
 
 void ProfileDialog::reject() {
-    profileListModel->loadProfiles();
+    profileListModel->rollback();
     QDialog::reject();
 }
 
 
 void ProfileDialog::select(int row, bool edit) {
+    m_ui->profileList->selectionModel()->clearSelection();
     QModelIndex index = profileListModel->index(row, ProfileListModel::NAME);
     m_ui->profileList->selectionModel()->select(index, QItemSelectionModel::Select);
     if (edit) {

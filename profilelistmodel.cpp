@@ -7,6 +7,10 @@
 
 #include <QUuid>
 #include "profilelistmodel.h"
+#include "jsonresource.h"
+#include <QMessageBox>
+#include "qjson/parser.h"
+#include "qjson/serializer.h"
 
 ProfileListModel::ProfileListModel(QObject *parent) : QStandardItemModel(parent) {
     loadProfiles();
@@ -35,69 +39,144 @@ void ProfileListModel::sameProxy(int row) {
     }
 }
 
-void ProfileListModel::newProfile() {
+bool ProfileListModel::newProfile() {
 
-    int row = rowCount();
-    QString uuid = QUuid::createUuid().toString();
-    setItem(row, NAME, new QStandardItem("new profile..."));
-    setItem(row, ID, new QStandardItem(uuid));
-    setItem(row, USE_HTTP, new QStandardItem());
-    setItem(row, HTTP_HOST, new QStandardItem());
-    setItem(row, HTTP_PORT, new QStandardItem());
-    setItem(row, USE_HTTPS, new QStandardItem());
-    setItem(row, HTTPS_HOST, new QStandardItem());
-    setItem(row, HTTPS_PORT, new QStandardItem());
-    setItem(row, USE_FTP, new QStandardItem());
-    setItem(row, FTP_HOST, new QStandardItem());
-    setItem(row, FTP_PORT, new QStandardItem());
-    setItem(row, EXCEPTIONS, new QStandardItem());
-}
-
-
-void ProfileListModel::loadProfiles() {
-    QSettings settings;
-    settings.beginGroup("profiles");
-    QStringList ids = settings.childGroups();
-    for (int i = 0; i < ids.size(); i++) {
-        settings.beginGroup(ids.at(i));
-        setItem(i, NAME, new QStandardItem(settings.value("name").toString()));
-        setItem(i, ID, new QStandardItem(ids.at(i)));
-        setItem(i, USE_HTTP, new QStandardItem(settings.value("httpProxy/useProxy").toString()));
-        setItem(i, HTTP_HOST, new QStandardItem(settings.value("httpProxy/host").toString()));
-        setItem(i, HTTP_PORT, new QStandardItem(settings.value("httpProxy/port").toString()));
-        setItem(i, USE_HTTPS, new QStandardItem(settings.value("httpsProxy/useProxy").toString()));
-        setItem(i, HTTPS_HOST, new QStandardItem(settings.value("httpsProxy/host").toString()));
-        setItem(i, HTTPS_PORT, new QStandardItem(settings.value("httpsProxy/port").toString()));
-        setItem(i, USE_FTP, new QStandardItem(settings.value("ftpProxy/useProxy").toString()));
-        setItem(i, FTP_HOST, new QStandardItem(settings.value("ftpProxy/host").toString()));
-        setItem(i, FTP_PORT, new QStandardItem(settings.value("ftpProxy/port").toString()));
-        setItem(i, EXCEPTIONS, new QStandardItem(settings.value("exceptions").toString()));
-        settings.endGroup();
+    JsonResource jsonResource("http://localhost:8000/proxysettings");
+    jsonResource.POST();
+    if (jsonResource.error) {
+        errorMsg = "Error connecting to Proxy Manager: " +  jsonResource.errorMsg;
+        return false;
     }
-    settings.endGroup();
+    qDebug() << "jsonResource.response: " << jsonResource.response;
+
+    QJson::Parser parser;
+    bool ok;
+    QVariantMap profile = parser.parse(jsonResource.response, &ok).toMap();
+    qDebug() << "profile som var: " << profile;
+    if (! ok) {
+        errorMsg = "Error understanding response from Proxy Manager: " + parser.errorString();
+        return false;
+    }
+    if (profile["name"].toString() == "") {
+        profile["name"] = "New profile...";
+    }
+
+    createdProfiles << profile["id"].toString();
+    append(profile);
+    return true;
 }
 
-void ProfileListModel::saveProfiles() {
+void ProfileListModel::deleteProfile(int row) {
+    if (row >= 0 && row < rowCount()) {
+        pendingDeletes << item(row, ID)->data(Qt::DisplayRole).toString();
+        removeRow(row, QModelIndex());
+    }
+}
+
+
+
+bool ProfileListModel::loadProfiles() {
+    JsonResource jsonResource("http://localhost:8000/proxysettings");
+    jsonResource.GET();
+    if (jsonResource.error) {
+        errorMsg = "Error loading profiles from Proxy Manager: " + jsonResource.errorMsg;
+        return false;
+    }
+    qDebug() << "GET, jsonResource response: " << jsonResource.response;
+
+    QJson::Parser parser;
+    bool ok;
+    QVariantList profiles = parser.parse(jsonResource.response, &ok).toList();
+    if (! ok) {
+        errorMsg = "Error understanding response from Proxy Manager: " + parser.errorString();
+        return false;
+    }
+
+    clear();
+    QVariantList::iterator it;
+    for (it = profiles.begin(); it != profiles.end(); it++) {
+        QVariantMap map = (*it).toMap();
+        qDebug() << "Appending: " << map;
+        append(map);
+    }
+
+    createdProfiles.clear();
+    return true;
+}
+
+bool ProfileListModel::commit() {
+    QStringList::iterator it;
+    for (it = pendingDeletes.begin(); it != pendingDeletes.end(); it++) {
+        JsonResource jsonResource("http://localhost:8000/proxysetting/" + *it);
+        jsonResource.DELETE();
+    }
+
     // FIXME only save changed profiles
-    QSettings settings;
-    settings.remove("profiles");
-    settings.beginGroup("profiles");
     for (int row = 0; row < rowCount(); row++) {
-        settings.beginGroup(item(row, ID)->data(Qt::DisplayRole).toString());
-        settings.setValue("name", item(row, NAME)->data(Qt::DisplayRole).toString());
-        settings.setValue("httpProxy/useProxy", item(row, USE_HTTP)->data(Qt::DisplayRole).toBool());
-        settings.setValue("httpProxy/host", item(row, HTTP_HOST)->data(Qt::DisplayRole).toString());
-        settings.setValue("httpProxy/port", item(row, HTTP_PORT)->data(Qt::DisplayRole).toInt());
-        settings.setValue("httpsProxy/useProxy", item(row, USE_HTTPS)->data(Qt::DisplayRole).toBool());
-        settings.setValue("httpsProxy/host", item(row, HTTPS_HOST)->data(Qt::DisplayRole).toString());
-        settings.setValue("httpsProxy/port", item(row, HTTPS_PORT)->data(Qt::DisplayRole).toInt());
-        settings.setValue("ftpProxy/useProxy", item(row, USE_FTP)->data(Qt::DisplayRole).toBool());
-        settings.setValue("ftpProxy/host", item(row, FTP_HOST)->data(Qt::DisplayRole).toString());
-        settings.setValue("ftpProxy/port", item(row, FTP_PORT)->data(Qt::DisplayRole).toInt());
-        settings.setValue("exceptions", item(row, EXCEPTIONS)->data(Qt::DisplayRole).toString());
-        settings.endGroup();
+        QJson::Serializer serializer;
+        QByteArray json = serializer.serialize(row2Map(row));
+        JsonResource jsonResource("http://localhost:8000/proxysetting/" + item(row, ID)->data(Qt::DisplayRole).toString());
+        qDebug() << "PUT:" << "http://localhost:8000/proxysetting/"  << item(row, ID)->data(Qt::DisplayRole).toString();
+        qDebug() << json;
+        jsonResource.PUT(json);
     }
-    settings.endGroup();
+
+    pendingDeletes.clear();
+    createdProfiles.clear();
+
+    return true;
+}
+
+bool ProfileListModel::rollback() {
+    QStringList::iterator it;
+    for (it = createdProfiles.begin(); it != createdProfiles.end(); it++) {
+        JsonResource jsonResource("http://localhost:8000/proxysetting/" + *it);
+        jsonResource.DELETE(); //Try to delete as much as possible, so we silently swallow errors
+    }
+
+    loadProfiles();
+    pendingDeletes.clear();
+    createdProfiles.clear();
+
+    return true;
 }
 
 
+void ProfileListModel::append(QVariantMap &profile) {
+    int row = rowCount();
+    setItem(row, NAME, new QStandardItem(profile["name"].toString()));
+    setItem(row, ID, new QStandardItem(profile["id"].toString()));
+    setItem(row, USE_HTTP, new QStandardItem(profile["httpProxy"].toMap()["useProxy"].toString()));
+    setItem(row, HTTP_HOST, new QStandardItem(profile["httpProxy"].toMap()["host"].toString()));
+    setItem(row, HTTP_PORT, new QStandardItem(profile["httpProxy"].toMap()["port"].toString()));
+    setItem(row, USE_HTTPS, new QStandardItem(profile["httpProxy"].toMap()["useProxy"].toString()));
+    setItem(row, HTTPS_HOST, new QStandardItem(profile["httpProxy"].toMap()["host"].toString()));
+    setItem(row, HTTPS_PORT, new QStandardItem(profile["httpProxy"].toMap()["port"].toString()));
+    setItem(row, USE_FTP, new QStandardItem(profile["httpProxy"].toMap()["useProxy"].toString()));
+    setItem(row, FTP_HOST, new QStandardItem(profile["httpProxy"].toMap()["host"].toString()));
+    setItem(row, FTP_PORT, new QStandardItem(profile["httpProxy"].toMap()["port"].toString()));
+    setItem(row, EXCEPTIONS, new QStandardItem(profile["exceptions"].toString()));
+}
+
+QVariantMap ProfileListModel::row2Map(int row) {
+    QVariantMap map;
+    map["name"] = item(row, NAME)->data(Qt::DisplayRole).toString();
+    map["id"] = item(row, ID)->data(Qt::DisplayRole).toString();
+    QVariantMap httpProxy;
+    httpProxy["useProxy"] = item(row, USE_HTTP)->data(Qt::DisplayRole).toBool();
+    httpProxy["host"] = item(row, HTTP_HOST)->data(Qt::DisplayRole).toString();
+    httpProxy["port"] = item(row, HTTP_PORT)->data(Qt::DisplayRole).toInt();
+    map["httpProxy"] = httpProxy;
+    QVariantMap httpsProxy;
+    httpsProxy["useProxy"] = item(row, USE_HTTPS)->data(Qt::DisplayRole).toBool();
+    httpsProxy["host"] = item(row, HTTPS_HOST)->data(Qt::DisplayRole).toString();
+    httpsProxy["port"] = item(row, HTTPS_PORT)->data(Qt::DisplayRole).toInt();
+    map["httpsProxy"] = httpsProxy;
+    QVariantMap ftpProxy;
+    ftpProxy["useProxy"] = item(row, USE_FTP)->data(Qt::DisplayRole).toBool();
+    ftpProxy["host"] = item(row, FTP_HOST)->data(Qt::DisplayRole).toString();
+    ftpProxy["port"] = item(row, FTP_PORT)->data(Qt::DisplayRole).toInt();
+    map["ftpProxy"] = ftpProxy;
+    map["exceptions"] = item(row, EXCEPTIONS)->data(Qt::DisplayRole).toString();
+    return map;
+}

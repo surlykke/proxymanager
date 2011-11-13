@@ -19,10 +19,12 @@ TEMPLATE = app
 SOURCES += profilelistmodel.cpp \
     main.cpp \
     trayicon.cpp \
-    profiledialog.cpp
+    profiledialog.cpp \
+    jsonresource.cpp
 HEADERS += profilelistmodel.h \
     trayicon.h \
-    profiledialog.h
+    profiledialog.h \
+    jsonresource.h
 FORMS += profilemanager.ui
 OTHER_FILES += icons/icon.png
 RESOURCES += \
