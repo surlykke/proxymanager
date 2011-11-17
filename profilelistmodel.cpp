@@ -40,8 +40,7 @@ void ProfileListModel::sameProxy(int row) {
 }
 
 bool ProfileListModel::newProfile() {
-
-    JsonResource jsonResource("http://localhost:8000/proxysettings");
+    JsonResource jsonResource("http://localhost:8000/proxysetting");
     jsonResource.POST();
     if (jsonResource.error) {
         errorMsg = "Error connecting to Proxy Manager: " +  jsonResource.errorMsg;
@@ -76,7 +75,7 @@ void ProfileListModel::deleteProfile(int row) {
 
 
 bool ProfileListModel::loadProfiles() {
-    JsonResource jsonResource("http://localhost:8000/proxysettings");
+    JsonResource jsonResource("http://localhost:8000/proxysetting");
     jsonResource.GET();
     if (jsonResource.error) {
         errorMsg = "Error loading profiles from Proxy Manager: " + jsonResource.errorMsg;
