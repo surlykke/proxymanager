@@ -13,14 +13,14 @@ class JsonResource: public QObject
 {
     Q_OBJECT
 public:
-    JsonResource(QString url, QObject *parent = 0);
+    JsonResource(QUrl url, QObject *parent = 0);
 
     void GET(ParameterSet parameters = ParameterSet());
-    void POST(QByteArray payload = QByteArray());
-    void PUT(QByteArray payload = QByteArray());
+    void POST(QVariant data);
+    void PUT(QVariant data);
     void DELETE();
 
-    QByteArray response;
+    QVariant response;
     bool    error;
     QString errorMsg;
 
@@ -28,7 +28,7 @@ public slots:
     void requestFinished();
 
 private:
-    void doRequest(QNetworkRequest &request, QString verb, QByteArray payload = QByteArray());
+    void doRequest(QNetworkRequest &request, QString verb, QVariant payload = QVariant());
     QNetworkAccessManager qnam;
     QUrl url;
     QMutex lock; // Only one thread at a time in each object-instance.

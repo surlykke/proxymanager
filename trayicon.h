@@ -19,6 +19,8 @@
 #define TRAYICON_H
 
 #include <QSystemTrayIcon>
+#include <QString>
+#include <QUrl>
 #include <QMenu>
 #include <QList>
 #include <QObject>
@@ -44,7 +46,12 @@ public slots:
     void exitProxyManager();
 
 private:
+    QUrl findLink(QString relation);
+    QUrl proxySettingUrl;
     ProfileListModel profileListModel;
+    QUrl proxySetting;
+    QUrl currentProxySetting;
+    void notify(QString summary, QString message);
 };
 
 #endif // TRAYICON_H

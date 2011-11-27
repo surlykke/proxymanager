@@ -50,12 +50,14 @@ public:
 
     static const int COLUMNS = 10;
 
+    static QString settingsDirPath;
+    static QDir settingsDir;
+
+
     ProfileListModel(QObject *parent = 0);
     virtual ~ProfileListModel();
 
     void sameProxy(int row);
-
-
 
     QString id(int row);
     QString name(int row);
@@ -65,6 +67,8 @@ public:
     void deleteProfile(int row);
     bool commit();
     bool rollback();
+
+    QVariantMap id2map(QString id);
 
 private:
     void append(QVariantMap &profile);

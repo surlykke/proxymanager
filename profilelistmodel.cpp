@@ -7,10 +7,13 @@
 
 #include <QUuid>
 #include "profilelistmodel.h"
-#include "jsonresource.h"
 #include <QMessageBox>
 #include "qjson/parser.h"
 #include "qjson/serializer.h"
+#include <QFile>
+
+QString ProfileListModel::settingsDirPath(QDir::homePath() + "/.pm_client/settings");
+QDir ProfileListModel::settingsDir(QDir::homePath() + "/.pm_client/settings");
 
 ProfileListModel::ProfileListModel(QObject *parent) : QStandardItemModel(parent) {
     loadProfiles();
@@ -40,27 +43,19 @@ void ProfileListModel::sameProxy(int row) {
 }
 
 bool ProfileListModel::newProfile() {
-    JsonResource jsonResource("http://localhost:8000/proxysetting");
-    jsonResource.POST();
-    if (jsonResource.error) {
-        errorMsg = "Error connecting to Proxy Manager: " +  jsonResource.errorMsg;
-        return false;
-    }
-    qDebug() << "jsonResource.response: " << jsonResource.response;
-
-    QJson::Parser parser;
-    bool ok;
-    QVariantMap profile = parser.parse(jsonResource.response, &ok).toMap();
-    qDebug() << "profile som var: " << profile;
-    if (! ok) {
-        errorMsg = "Error understanding response from Proxy Manager: " + parser.errorString();
-        return false;
-    }
-    if (profile["name"].toString() == "") {
-        profile["name"] = "New profile...";
-    }
-
-    createdProfiles << profile["id"].toString();
+    QVariantMap profile;
+    QString id = QUuid::createUuid().toString();
+    // Strip leading '{' and trailing '}'
+    id = id.right(id.size() - 1);
+    id = id.left(id.size() - 1);
+    qDebug() << "id: " << id;
+    profile["id"] = id;
+    profile["name"] = "New profile...";
+    QFile settingsFile(settingsDir.absolutePath() + "/" + id);
+    settingsFile.open(QIODevice::WriteOnly);
+    settingsFile.write(QJson::Serializer().serialize(profile));
+    settingsFile.close();
+    createdProfiles << id;
     append(profile);
     return true;
 }
@@ -72,33 +67,28 @@ void ProfileListModel::deleteProfile(int row) {
     }
 }
 
-
+QVariantMap ProfileListModel::id2map(QString id) {
+    for (int row = 0; row < rowCount(); row++) {
+        if (id == item(row, ID)->data(Qt::DisplayRole).toString()) {
+            return row2Map(row);
+        }
+    }
+    return QVariantMap();
+}
 
 bool ProfileListModel::loadProfiles() {
-    JsonResource jsonResource("http://localhost:8000/proxysetting");
-    jsonResource.GET();
-    if (jsonResource.error) {
-        errorMsg = "Error loading profiles from Proxy Manager: " + jsonResource.errorMsg;
-        return false;
-    }
-    qDebug() << "GET, jsonResource response: " << jsonResource.response;
-
+    QStringList settingsFiles = settingsDir.entryList(QDir::Files);
+    QStringList::Iterator it;
     QJson::Parser parser;
-    bool ok;
-    QVariantList profiles = parser.parse(jsonResource.response, &ok).toList();
-    if (! ok) {
-        errorMsg = "Error understanding response from Proxy Manager: " + parser.errorString();
-        return false;
+    for (it = settingsFiles.begin(); it != settingsFiles.end(); it++) {
+        qDebug() << "Læser: " << settingsDir.absoluteFilePath(*it);
+        QFile settingsFile(settingsDir.absoluteFilePath(*it));
+        QVariantMap settings = QJson::Parser().parse(&settingsFile).toMap();
+        qDebug() << "Appender: " << settings;
+        append(settings);
     }
 
-    clear();
-    QVariantList::iterator it;
-    for (it = profiles.begin(); it != profiles.end(); it++) {
-        QVariantMap map = (*it).toMap();
-        qDebug() << "Appending: " << map;
-        append(map);
-    }
-
+    pendingDeletes.clear();
     createdProfiles.clear();
     return true;
 }
@@ -106,18 +96,15 @@ bool ProfileListModel::loadProfiles() {
 bool ProfileListModel::commit() {
     QStringList::iterator it;
     for (it = pendingDeletes.begin(); it != pendingDeletes.end(); it++) {
-        JsonResource jsonResource("http://localhost:8000/proxysetting/" + *it);
-        jsonResource.DELETE();
+        QFile(settingsDir.absolutePath() + "/" + *it).remove();
     }
 
     // FIXME only save changed profiles
     for (int row = 0; row < rowCount(); row++) {
-        QJson::Serializer serializer;
-        QByteArray json = serializer.serialize(row2Map(row));
-        JsonResource jsonResource("http://localhost:8000/proxysetting/" + item(row, ID)->data(Qt::DisplayRole).toString());
-        qDebug() << "PUT:" << "http://localhost:8000/proxysetting/"  << item(row, ID)->data(Qt::DisplayRole).toString();
-        qDebug() << json;
-        jsonResource.PUT(json);
+        QFile settingsFile(settingsDir.absolutePath() + "/" + item(row, ID)->data(Qt::DisplayRole).toString());
+        settingsFile.open(QIODevice::WriteOnly);
+        settingsFile.write(QJson::Serializer().serialize(row2Map(row)));
+        settingsFile.close();
     }
 
     pendingDeletes.clear();
@@ -129,8 +116,7 @@ bool ProfileListModel::commit() {
 bool ProfileListModel::rollback() {
     QStringList::iterator it;
     for (it = createdProfiles.begin(); it != createdProfiles.end(); it++) {
-        JsonResource jsonResource("http://localhost:8000/proxysetting/" + *it);
-        jsonResource.DELETE(); //Try to delete as much as possible, so we silently swallow errors
+        QFile(settingsDir.absolutePath() + "/" + *it).remove();
     }
 
     loadProfiles();

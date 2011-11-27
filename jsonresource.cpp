@@ -2,8 +2,10 @@
 #include <QMutexLocker>
 #include <QDebug>
 #include <QBuffer>
+#include "qjson/parser.h"
+#include "qjson/serializer.h"
 
-JsonResource::JsonResource(QString url, QObject *parent): QObject(parent), url(url) {
+JsonResource::JsonResource(QUrl url, QObject *parent): QObject(parent), url(url) {
     connect(&qnam, SIGNAL(finished(QNetworkReply*)), this, SLOT(requestFinished()));
 }
 
@@ -18,12 +20,12 @@ void JsonResource::GET(ParameterSet parameters) {
     doRequest(request, "GET");
 }
 
-void JsonResource::POST(QByteArray payload) {
+void JsonResource::POST(QVariant payload) {
     QNetworkRequest request(url);
     doRequest(request, "POST", payload);
 }
 
-void JsonResource::PUT(QByteArray payload) {
+void JsonResource::PUT(QVariant payload) {
     QNetworkRequest request(url);
     doRequest(request, "PUT", payload);
 }
@@ -33,17 +35,26 @@ void JsonResource::DELETE() {
     doRequest(request, "DELETE");
 }
 
-void JsonResource::doRequest(QNetworkRequest &request, QString verb, QByteArray payload) {
+void JsonResource::doRequest(QNetworkRequest &request, QString verb, QVariant payload) {
     QMutexLocker mutexLocker(&lock);
-    QBuffer data(&payload);
+
+    QByteArray outData =  QJson::Serializer().serialize(payload);
+
+    QBuffer data(&outData);
     QNetworkReply *reply = qnam.sendCustomRequest(request, verb.toAscii(), &data);
     qDebug() << "request " << verb << " afsendt";
 
     loop.exec();
 
+    error = false;
     if (reply->error() == QNetworkReply::NoError) {
-        error = false;
-        response = reply->readAll();
+        bool ok;
+        QJson::Parser parser;
+        response = parser.parse(reply->readAll(), &ok);
+        if (! ok) {
+            error = true;
+            errorMsg = parser.errorString();
+        }
     }
     else {
         error = true;

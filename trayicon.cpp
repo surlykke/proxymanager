@@ -9,11 +9,13 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <QProcess>
+#include "qjson/parser.h"
 #include "jsonresource.h"
 #include "notifications.h"
 
 TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
     setIcon(QIcon(":icons/icon.png"));
+
     makeContextMenu();
     connect(contextMenu(), SIGNAL(triggered(QAction*)), this, SLOT(chooseProfile(QAction*)));
 }
@@ -46,16 +48,25 @@ void TrayIcon::makeContextMenu() {
 }
 
 void TrayIcon::chooseProfile(QAction *action) {
+    static QUrl proxySettingsUrl;
     if (action->data().type() == QVariant::String) {
-        JsonResource jsonResource("http://localhost:8000/proxysetting/current");
-        jsonResource.PUT(action->data().toString().toUtf8());
-        if (jsonResource.error) {
-            QString summary("Error activating '" + action->text() + "'");
-            Notifications(QDBusConnection::sessionBus(), this).Notify("Proxymanager client", 0, "", summary, jsonResource.errorMsg, QStringList(), QMap<QString, QVariant>(), 2000);
+        if (proxySettingsUrl.isEmpty()) {
+            proxySettingsUrl = findLink("desktopservices:proxysetting");
+        }
+        if (proxySettingsUrl.isEmpty()) {
+            notify("Error activating profile", "Could not retrieve proxysetting link from desktopservices");
             makeContextMenu();
         }
         else {
-            Notifications(QDBusConnection::sessionBus(), this).Notify("Proxymanager client", 0, "", "Profile activated", "Profile '" + action->text() + "' activated",  QStringList(), QMap<QString, QVariant>(), 2000);
+            JsonResource jsonResource(proxySettingsUrl);
+            jsonResource.PUT(profileListModel.id2map(action->data().toString().toUtf8()));
+            if (jsonResource.error) {
+                notify("Error activating profile",  jsonResource.errorMsg);
+                makeContextMenu();
+            }
+            else {
+                notify("Profile activated", "Profile '" + action->text() + "' activated");
+            }
         }
     }
 }
@@ -82,3 +93,29 @@ void TrayIcon::exitProxyManager() {
 }
 
 
+QUrl TrayIcon::findLink(QString relation) {
+    static QUrl baseUrl("http://localhost:8000/desktopservices");
+    JsonResource jsonResource(baseUrl);
+    jsonResource.GET();
+    if (!jsonResource.error) {
+        QJson::Parser parser;
+        QVariantList links =  jsonResource.response.toMap()["links"].toList();
+        qDebug() << "findLink modtog: " << links;
+        for (int i = 0; i < links.size(); i++) {
+            QVariantMap link = links.at(i).toMap();
+            qDebug() << "Undersøger: " << link;
+            qDebug() << "Sammenligner " << relation << " med " << link["rel"].toString();
+            if (relation == link["rel"].toString()) {
+                QUrl resolvedUrl = baseUrl.resolved(QUrl(link["href"].toString()));
+                qDebug() << "resolvedUrl: " << resolvedUrl.toString();
+                return resolvedUrl;
+            }
+        }
+    }
+    return QUrl();
+}
+
+
+void TrayIcon::notify(QString summary, QString message) {
+    Notifications(QDBusConnection::sessionBus(), this).Notify("Proxymanager client", 0, "", summary, message,  QStringList(), QMap<QString, QVariant>(), 2000);
+}
