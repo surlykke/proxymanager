@@ -28,7 +28,9 @@ HEADERS += profilelistmodel.h \
     jsonresource.h \
     notifications.h
 FORMS += profilemanager.ui
-OTHER_FILES += icons/icon.png
+OTHER_FILES += icons/icon.png \
+               icons/icon.svg \
+               icons/downarrow.svg
 RESOURCES += \
     pm_client.qrc
 LIBS += -L/usr/lib/ -lqjson

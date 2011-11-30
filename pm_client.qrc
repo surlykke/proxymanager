@@ -2,6 +2,6 @@
     <qresource prefix="/">
         <file>icons/icon.svg</file>
         <file>icons/icon.png</file>
-        <file>icons/nedpil.svg</file>
+        <file>icons/downarrow.svg</file>
     </qresource>
 </RCC>

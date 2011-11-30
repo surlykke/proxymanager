@@ -180,7 +180,7 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="icon">
         <iconset resource="pm_client.qrc">
-         <normaloff>:/icons/nedpil.svg</normaloff>:/icons/nedpil.svg</iconset>
+         <normaloff>:/icons/downarrow.svg</normaloff>:/icons/downarrow.svg</iconset>
        </property>
       </widget>
      </item>
