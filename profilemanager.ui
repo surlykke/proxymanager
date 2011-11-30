@@ -178,6 +178,10 @@ p, li { white-space: pre-wrap; }
        <property name="text">
         <string>...</string>
        </property>
+       <property name="icon">
+        <iconset resource="pm_client.qrc">
+         <normaloff>:/icons/nedpil.svg</normaloff>:/icons/nedpil.svg</iconset>
+       </property>
       </widget>
      </item>
     </layout>
