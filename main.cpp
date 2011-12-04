@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     }
     QCoreApplication::setOrganizationName("Surlykke IT");
     QCoreApplication::setOrganizationDomain("surlykke-it.dk");
-    QCoreApplication::setApplicationName("ProxyManager");
+    QCoreApplication::setApplicationName("pm_client");
 
     qDebug() << "Dir: " << ProfileListModel::settingsDir.absolutePath();
     QString settingsDirPath =  QDir::homePath() + "/.pm_client/settings";

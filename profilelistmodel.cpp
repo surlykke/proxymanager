@@ -31,6 +31,15 @@ QString ProfileListModel::name(int row) {
     return item(row, NAME)->data(Qt::DisplayRole).toString();
 }
 
+bool ProfileListModel::exists(QString id) {
+    for (int row = 0; row < rowCount(); row++) {
+        if (id == item(row, ID)->data(Qt::DisplayRole).toString()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void ProfileListModel::sameProxy(int row) {
     if (row >= 0 && row < rowCount()) {
         item(row, USE_HTTPS)->setData(item(row, USE_HTTP)->data(Qt::DisplayRole), Qt::DisplayRole);

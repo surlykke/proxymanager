@@ -61,6 +61,7 @@ public:
 
     QString id(int row);
     QString name(int row);
+    bool exists(QString id);
     QString errorMsg;
 
     bool newProfile();

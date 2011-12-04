@@ -12,12 +12,20 @@
 #include "qjson/parser.h"
 #include "jsonresource.h"
 #include "notifications.h"
+#include <QFileSystemWatcher>
 
 TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
     setIcon(QIcon(":icons/icon.png"));
 
     makeContextMenu();
     connect(contextMenu(), SIGNAL(triggered(QAction*)), this, SLOT(chooseProfile(QAction*)));
+
+    // Force setup
+    resolvconfChanged();
+
+    // Monitor /etc/resolv.conf to discover when network changes
+    resolvconfWatcher.addPath("/etc/resolv.conf");
+    connect(&resolvconfWatcher, SIGNAL(fileChanged(QString)), this, SLOT(resolvconfChanged()));
 }
 
 void TrayIcon::makeContextMenu() {
@@ -34,6 +42,9 @@ void TrayIcon::makeContextMenu() {
         profileAction->setData(profileListModel.id(row));
         profileAction->setCheckable(true);
         profileGroup->addAction(profileAction);
+        if (profileAction->data() == currentProfileId) {
+            profileAction->setChecked(true);
+        }
     }
 
     contextMenu()->addSeparator();
@@ -48,29 +59,40 @@ void TrayIcon::makeContextMenu() {
 }
 
 void TrayIcon::chooseProfile(QAction *action) {
-    static QUrl proxySettingsUrl;
     if (action->data().type() == QVariant::String) {
-        if (proxySettingsUrl.isEmpty()) {
-            proxySettingsUrl = findLink("desktopservices:proxysetting");
-        }
-        if (proxySettingsUrl.isEmpty()) {
-            notify("Error activating profile", "Could not retrieve proxysetting link from desktopservices");
-            makeContextMenu();
-        }
-        else {
-            JsonResource jsonResource(proxySettingsUrl);
-            jsonResource.PUT(profileListModel.id2map(action->data().toString().toUtf8()));
-            if (jsonResource.error) {
-                notify("Error activating profile",  jsonResource.errorMsg);
-                makeContextMenu();
-            }
-            else {
-                notify("Profile activated", "Profile '" + action->text() + "' activated");
-            }
-        }
+        QString profileId = action->data().toString();
+        QSettings settings;
+        settings.beginGroup("associations");
+        settings.setValue(networkSignature(), profileId);
+        settings.endGroup();
+        activateProfile(profileId);
     }
 }
 
+void TrayIcon::activateProfile(QString profileId) {
+    qDebug() << "activating: " + profileId;
+    static QUrl proxySettingsUrl;
+    if (proxySettingsUrl.isEmpty()) {
+        proxySettingsUrl = findLink("desktopservices:proxysetting");
+    }
+    if (proxySettingsUrl.isEmpty()) {
+        notify("Error activating profile", "Could not retrieve proxysetting link from desktopservices");
+        makeContextMenu();
+    }
+    else {
+        JsonResource jsonResource(proxySettingsUrl);
+        QVariantMap map = profileListModel.id2map(profileId);
+        jsonResource.PUT(map);
+        if (jsonResource.error) {
+            notify("Error activating profile",  jsonResource.errorMsg);
+            makeContextMenu();
+        }
+        else {
+            currentProfileId = profileId;
+            notify("Profile activated", "Profile '" + map.value("name").toString() + "' activated");
+        }
+    }
+}
 
 void TrayIcon::manageProfiles() {
     QString selectedId;
@@ -118,4 +140,57 @@ QUrl TrayIcon::findLink(QString relation) {
 
 void TrayIcon::notify(QString summary, QString message) {
     Notifications(QDBusConnection::sessionBus(), this).Notify("Proxymanager client", 0, "", summary, message,  QStringList(), QMap<QString, QVariant>(), 2000);
+}
+
+void TrayIcon::resolvconfChanged() {
+    currentNetworkSignature = "INVALID";
+    QSettings settings;
+    settings.beginGroup("associations");
+    qDebug() << "I resolvconfChanged, networkSignature: " << networkSignature();
+    QString id = settings.value(networkSignature()).toString();
+    qDebug() << "id: " << id;
+    if (profileListModel.exists(id)) {
+        activateProfile(id);
+        makeContextMenu();
+    }
+    else if (id != "") {
+        qDebug() << "Fjerner: " << networkSignature();
+        settings.remove(networkSignature());
+    }
+    settings.endGroup();
+    qDebug() << "resolvconf changed";
+    // If the file has been removed, QFileSystemWatcher stops watching it...
+    if (! resolvconfWatcher.files().contains("/etc/resolv.conf")) {
+       resolvconfWatcher.addPath("/etc/resolv.conf");
+    }
+}
+
+QString TrayIcon::networkSignature() {
+    if (currentNetworkSignature == "INVALID") {
+        currentNetworkSignature = "";
+        QFile resolvConf("/etc/resolv.conf");
+        if (resolvConf.exists() && resolvConf.open(QIODevice::ReadOnly)) {
+            QTextStream stream(&resolvConf);
+            QCryptographicHash hash(QCryptographicHash::Md5);
+            bool foundSome = false;
+            while (! stream.atEnd()) {
+                QString line = stream.readLine();
+                qDebug() << "Reading " << line;
+                if (notWhiteSpace(line)) {
+                    qDebug() << "Adding";
+                    hash.addData(line.toAscii());
+                    foundSome = true;
+                }
+            }
+            if (foundSome) {
+                currentNetworkSignature =  hash.result().toHex();
+            }
+        }
+    }
+    return currentNetworkSignature;
+}
+
+bool TrayIcon::notWhiteSpace(QString& string){
+    static QRegExp reg("^\\s*#.*$|^\\s*$");
+    return ! reg.exactMatch(string);
 }

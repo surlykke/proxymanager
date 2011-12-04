@@ -27,6 +27,7 @@
 #include <QProcess>
 #include <QTemporaryFile>
 #include "profiledialog.h"
+#include <QFileSystemWatcher>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
@@ -44,14 +45,22 @@ public slots:
     void chooseProfile(QAction *action);
     void manageProfiles();
     void exitProxyManager();
+    void resolvconfChanged();
 
 private:
+    void activateProfile(QString profileId);
     QUrl findLink(QString relation);
     QUrl proxySettingUrl;
     ProfileListModel profileListModel;
     QUrl proxySetting;
     QUrl currentProxySetting;
     void notify(QString summary, QString message);
+    bool notWhiteSpace(QString& string);
+    QString networkSignature();
+    QString currentNetworkSignature;
+    QString currentProfileId;
+    QFileSystemWatcher resolvconfWatcher;
+
 };
 
 #endif // TRAYICON_H
