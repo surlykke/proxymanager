@@ -49,7 +49,7 @@ void TrayIcon::makeContextMenu() {
 
     contextMenu()->addSeparator();
 
-    QAction* manageProfileAction = contextMenu()->addAction("Manage profiles");
+    QAction* manageProfileAction = contextMenu()->addAction("Manage...");
     connect(manageProfileAction, SIGNAL(triggered()), this, SLOT(manageProfiles()));
 
     contextMenu()->addSeparator();
@@ -89,7 +89,7 @@ void TrayIcon::activateProfile(QString profileId) {
         }
         else {
             currentProfileId = profileId;
-            notify("Profile activated", "Profile '" + map.value("name").toString() + "' activated");
+            notify("Proxy setting activated", "Proxy setting '" + map.value("name").toString() + "' activated");
         }
     }
 }
