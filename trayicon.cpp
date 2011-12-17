@@ -89,7 +89,7 @@ void TrayIcon::activateProfile(QString profileId) {
         }
         else {
             currentProfileId = profileId;
-            notify("Proxy setting activated", "Proxy setting '" + map.value("name").toString() + "' activated");
+            notify("Proxy settings changed", "Proxy setting '" + map.value("name").toString() + "' activated");
         }
     }
 }
