@@ -11,9 +11,8 @@
 #include "qjson/parser.h"
 #include "qjson/serializer.h"
 #include <QFile>
+#include <QSettings>
 
-QString ProfileListModel::settingsDirPath(QDir::homePath() + "/.pm_client/settings");
-QDir ProfileListModel::settingsDir(QDir::homePath() + "/.pm_client/settings");
 
 ProfileListModel::ProfileListModel(QObject *parent) : QStandardItemModel(parent) {
     loadProfiles();
@@ -60,7 +59,7 @@ bool ProfileListModel::newProfile() {
     qDebug() << "id: " << id;
     profile["id"] = id;
     profile["name"] = "New profile...";
-    QFile settingsFile(settingsDir.absolutePath() + "/" + id);
+    QFile settingsFile(profilesDir.absolutePath() + "/" + id);
     settingsFile.open(QIODevice::WriteOnly);
     settingsFile.write(QJson::Serializer().serialize(profile));
     settingsFile.close();
@@ -86,12 +85,12 @@ QVariantMap ProfileListModel::id2map(QString id) {
 }
 
 bool ProfileListModel::loadProfiles() {
-    QStringList settingsFiles = settingsDir.entryList(QDir::Files);
+    QStringList settingsFiles = profilesDir.entryList(QDir::Files);
     QStringList::Iterator it;
     QJson::Parser parser;
     for (it = settingsFiles.begin(); it != settingsFiles.end(); it++) {
-        qDebug() << "Læser: " << settingsDir.absoluteFilePath(*it);
-        QFile settingsFile(settingsDir.absoluteFilePath(*it));
+        qDebug() << "Læser: " << profilesDir.absoluteFilePath(*it);
+        QFile settingsFile(profilesDir.absoluteFilePath(*it));
         QVariantMap settings = QJson::Parser().parse(&settingsFile).toMap();
         qDebug() << "Appender: " << settings;
         append(settings);
@@ -105,12 +104,12 @@ bool ProfileListModel::loadProfiles() {
 bool ProfileListModel::commit() {
     QStringList::iterator it;
     for (it = pendingDeletes.begin(); it != pendingDeletes.end(); it++) {
-        QFile(settingsDir.absolutePath() + "/" + *it).remove();
+        QFile(profilesDir.absolutePath() + "/" + *it).remove();
     }
 
     // FIXME only save changed profiles
     for (int row = 0; row < rowCount(); row++) {
-        QFile settingsFile(settingsDir.absolutePath() + "/" + item(row, ID)->data(Qt::DisplayRole).toString());
+        QFile settingsFile(profilesDir.absolutePath() + "/" + item(row, ID)->data(Qt::DisplayRole).toString());
         settingsFile.open(QIODevice::WriteOnly);
         settingsFile.write(QJson::Serializer().serialize(row2Map(row)));
         settingsFile.close();
@@ -125,7 +124,7 @@ bool ProfileListModel::commit() {
 bool ProfileListModel::rollback() {
     QStringList::iterator it;
     for (it = createdProfiles.begin(); it != createdProfiles.end(); it++) {
-        QFile(settingsDir.absolutePath() + "/" + *it).remove();
+        QFile(profilesDir.absolutePath() + "/" + *it).remove();
     }
 
     loadProfiles();
@@ -174,3 +173,5 @@ QVariantMap ProfileListModel::row2Map(int row) {
     map["exceptions"] = item(row, EXCEPTIONS)->data(Qt::DisplayRole).toString();
     return map;
 }
+
+QDir ProfileListModel::profilesDir;

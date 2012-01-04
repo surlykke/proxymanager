@@ -10,9 +10,9 @@
 #include <QVariantMap>
 #include <QProcess>
 #include "qjson/parser.h"
-#include "jsonresource.h"
 #include "notifications.h"
 #include <QFileSystemWatcher>
+#include <QFile>
 
 TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
     setIcon(QIcon(":icons/icon.png"));
@@ -71,28 +71,37 @@ void TrayIcon::chooseProfile(QAction *action) {
 
 void TrayIcon::activateProfile(QString profileId) {
     qDebug() << "activating: " + profileId;
-    static QUrl proxySettingsUrl;
-    if (proxySettingsUrl.isEmpty()) {
-        proxySettingsUrl = findLink("desktopservices:proxysetting");
+    QVariantMap profile = profileListModel.id2map(profileId);
+    QFile rulesFile(settingsDir.absolutePath() + "/rules");
+    rulesFile.open(QIODevice::WriteOnly);
+    QTextStream textStream(&rulesFile);
+    writeForProtocol(profile, "http", textStream);
+    writeForProtocol(profile, "https", textStream);
+    writeForProtocol(profile, "ftp", textStream);
+
+    if (profile.contains("exceptions") && profile.value("exceptions").toString().trimmed().size() > 0) {
+        textStream << "NoProxy " << profile.value("exceptions").toString().trimmed() << "\n";
     }
-    if (proxySettingsUrl.isEmpty()) {
-        notify("Error activating profile", "Could not retrieve proxysetting link from desktopservices");
-        makeContextMenu();
-    }
-    else {
-        JsonResource jsonResource(proxySettingsUrl);
-        QVariantMap map = profileListModel.id2map(profileId);
-        jsonResource.PUT(map);
-        if (jsonResource.error) {
-            notify("Error activating profile",  jsonResource.errorMsg);
-            makeContextMenu();
-        }
-        else {
-            currentProfileId = profileId;
-            notify("Proxy settings changed", "Proxy setting '" + map.value("name").toString() + "' activated");
-        }
+
+}
+
+void TrayIcon::writeForProtocol(QVariantMap& profile, QString protocol, QTextStream& textStream) {
+    QString key = protocol + "Proxy";
+    qDebug() << "Kigger efter: " << key;
+    qDebug() << "profile.contains(\"" << key << "\"): " << profile.contains(key);
+    qDebug() << "useProxy: " << profile.value(key).toMap().value("useProxy").toBool();
+    if (profile.contains(key) && profile.value(key).toMap().value("useProxy").toBool()) {
+            textStream << "ProxyRemote "
+                       << protocol << " "
+                       << profile.value(key).toMap().value("host").toString()
+                       << ":"
+                       << profile.value(key).toMap().value("port").toString()
+                       << "\n";
     }
 }
+
+
+
 
 void TrayIcon::manageProfiles() {
     QString selectedId;
@@ -112,29 +121,6 @@ void TrayIcon::manageProfiles() {
 
 void TrayIcon::exitProxyManager() {
     exit(0);
-}
-
-
-QUrl TrayIcon::findLink(QString relation) {
-    static QUrl baseUrl("http://localhost:8000/desktopservices");
-    JsonResource jsonResource(baseUrl);
-    jsonResource.GET();
-    if (!jsonResource.error) {
-        QJson::Parser parser;
-        QVariantList links =  jsonResource.response.toMap()["links"].toList();
-        qDebug() << "findLink modtog: " << links;
-        for (int i = 0; i < links.size(); i++) {
-            QVariantMap link = links.at(i).toMap();
-            qDebug() << "Undersøger: " << link;
-            qDebug() << "Sammenligner " << relation << " med " << link["rel"].toString();
-            if (relation == link["rel"].toString()) {
-                QUrl resolvedUrl = baseUrl.resolved(QUrl(link["href"].toString()));
-                qDebug() << "resolvedUrl: " << resolvedUrl.toString();
-                return resolvedUrl;
-            }
-        }
-    }
-    return QUrl();
 }
 
 
@@ -194,3 +180,7 @@ bool TrayIcon::notWhiteSpace(QString& string){
     static QRegExp reg("^\\s*#.*$|^\\s*$");
     return ! reg.exactMatch(string);
 }
+
+QDir TrayIcon::settingsDir;
+
+

@@ -50,8 +50,6 @@ public:
 
     static const int COLUMNS = 10;
 
-    static QString settingsDirPath;
-    static QDir settingsDir;
 
 
     ProfileListModel(QObject *parent = 0);
@@ -71,7 +69,10 @@ public:
 
     QVariantMap id2map(QString id);
 
+    static QDir profilesDir;
+
 private:
+
     void append(QVariantMap &profile);
     QVariantMap row2Map(int row);
 
@@ -79,6 +80,7 @@ private:
 
     QList<QString> createdProfiles;
     QList<QString> pendingDeletes;
+
 };
 
 #endif /* TESTMODEL_H_ */

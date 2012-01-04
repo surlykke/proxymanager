@@ -4,6 +4,9 @@
 #include <QObject>
 #include "trayicon.h"
 #include <QDebug>
+#include <QSettings>
+#include <QFileInfo>
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -15,14 +18,20 @@ int main(int argc, char *argv[])
     }
     QCoreApplication::setOrganizationName("Surlykke IT");
     QCoreApplication::setOrganizationDomain("surlykke-it.dk");
-    QCoreApplication::setApplicationName("pm_client");
+    QCoreApplication::setApplicationName("ProxyManager");
 
-    qDebug() << "Dir: " << ProfileListModel::settingsDir.absolutePath();
-    QString settingsDirPath =  QDir::homePath() + "/.pm_client/settings";
-    ProfileListModel::settingsDir.mkpath(settingsDirPath);
-    ProfileListModel::settingsDir.setPath(settingsDirPath);
+    QString settingsDir =  QFileInfo(QSettings().fileName()).dir().absolutePath();
+    TrayIcon::settingsDir.mkpath(settingsDir);
+    TrayIcon::settingsDir.cd(settingsDir);
+
+    QString profilesDir = settingsDir + "/proxymanager_profiles";
+    ProfileListModel::profilesDir.mkpath(profilesDir);
+    ProfileListModel::profilesDir.cd(profilesDir);
+
+    qDebug() << "settingsDir: " << TrayIcon::settingsDir.absolutePath();
+    qDebug() << "profilesdir: " << ProfileListModel::profilesDir.absolutePath();
+
     TrayIcon trayIcon;
-
     trayIcon.show();
 
     return a.exec();

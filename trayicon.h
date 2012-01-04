@@ -31,6 +31,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include <QTextStream>
 
 
 class TrayIcon : public QSystemTrayIcon
@@ -40,6 +41,7 @@ class TrayIcon : public QSystemTrayIcon
 public:
     TrayIcon(QWidget* parent = 0);
     void makeContextMenu();
+    static QDir settingsDir;
 
 public slots:
     void chooseProfile(QAction *action);
@@ -47,9 +49,10 @@ public slots:
     void exitProxyManager();
     void resolvconfChanged();
 
+
 private:
     void activateProfile(QString profileId);
-    QUrl findLink(QString relation);
+    void writeForProtocol(QVariantMap& profile, QString protocol, QTextStream& textStream);
     QUrl proxySettingUrl;
     ProfileListModel profileListModel;
     QUrl proxySetting;
