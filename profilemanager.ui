@@ -227,7 +227,7 @@ p, li { white-space: pre-wrap; }
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap resource="pm_client.qrc">:/icons/icon.png</pixmap>
+    <pixmap resource="proxymanager.qrc">:/icons/icon.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
@@ -241,7 +241,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>profileManagerButtonBox</tabstop>
  </tabstops>
  <resources>
-  <include location="pm_client.qrc"/>
+  <include location="proxymanager.qrc"/>
  </resources>
  <connections/>
 </ui>

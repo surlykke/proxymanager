@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with PitchTrainer.  If not, see <http://www.gnu.org/licenses/>.
 QT += dbus xml network
-TARGET = pm_client
+TARGET = proxymanager
 TEMPLATE = app
 SOURCES += profilelistmodel.cpp \
     main.cpp \
@@ -32,8 +32,7 @@ OTHER_FILES += icons/icon.png \
                icons/icon.svg \
                icons/downarrow.svg
 RESOURCES += \
-    pm_client.qrc
-LIBS += -L/usr/lib/ -lqjson
+    proxymanager.qrc
 target.path = /usr/local/bin
 INSTALLS += target
 
