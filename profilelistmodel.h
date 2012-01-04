@@ -23,10 +23,7 @@
 #include <QString>
 #include <QStandardItemModel>
 #include <QStandardItem>
-
-namespace PLM {
-
-}
+#include "profile.h"
 
 class ProfileListModel : public QStandardItemModel {
     Q_OBJECT
@@ -36,26 +33,20 @@ public:
     enum column{
         NAME,
         ID,
-        USE_HTTP,
-        HTTP_HOST,
-        HTTP_PORT,
-        USE_HTTPS,
-        HTTPS_HOST,
-        HTTPS_PORT,
-        USE_FTP,
-        FTP_HOST,
-        FTP_PORT,
-        EXCEPTIONS
-    };
+        USE_PROXY,
+        HOST,
+        PORT,
+        EXCEPTIONS,
+        USE_AUTHENTICATION,
+        NTDOMAIN,
+        USERID,
+        PASSWORD
+   };
 
     static const int COLUMNS = 10;
 
-
-
     ProfileListModel(QObject *parent = 0);
     virtual ~ProfileListModel();
-
-    void sameProxy(int row);
 
     QString id(int row);
     QString name(int row);
@@ -67,14 +58,12 @@ public:
     bool commit();
     bool rollback();
 
-    QVariantMap id2map(QString id);
-
-    static QDir profilesDir;
+    Profile id2profile(QString id);
 
 private:
 
-    void append(QVariantMap &profile);
-    QVariantMap row2Map(int row);
+    void append(Profile &profile);
+    Profile row2profile(int row);
 
     bool loadProfiles();
 

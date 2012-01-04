@@ -70,19 +70,29 @@ void TrayIcon::chooseProfile(QAction *action) {
 }
 
 void TrayIcon::activateProfile(QString profileId) {
-    qDebug() << "activating: " + profileId;
-    QVariantMap profile = profileListModel.id2map(profileId);
-    QFile rulesFile(settingsDir.absolutePath() + "/rules");
-    rulesFile.open(QIODevice::WriteOnly);
-    QTextStream textStream(&rulesFile);
-    writeForProtocol(profile, "http", textStream);
-    writeForProtocol(profile, "https", textStream);
-    writeForProtocol(profile, "ftp", textStream);
-
-    if (profile.contains("exceptions") && profile.value("exceptions").toString().trimmed().size() > 0) {
-        textStream << "NoProxy " << profile.value("exceptions").toString().trimmed() << "\n";
+    qDebug() << cntlmProcess.readAllStandardError();
+    if (cntlmProcess.state() != QProcess::NotRunning) {
+        cntlmProcess.close();
     }
 
+    Profile profile = profileListModel.id2profile(profileId);
+    QStringList args;
+    args << "-f" << "-v" << "-l" << "7938";
+    if (profile.useAuthentication) {
+        args << "-u" << (profile.userId + "@" + profile.ntDomain) << "-p" << profile.password;
+    }
+    if (profile.useProxy) {
+        if (profile.exceptions.trimmed().size() > 0) {
+            args << "-N" << profile.exceptions;
+        }
+        args << profile.host << QString::number(profile.port);
+    }
+    else {
+        args << "-N" << "*";
+        args << "dummy" << "1234";
+    }
+    cntlmProcess.setReadChannel(QProcess::StandardError);
+    cntlmProcess.start("cntlm", args);
 }
 
 void TrayIcon::writeForProtocol(QVariantMap& profile, QString protocol, QTextStream& textStream) {
@@ -132,19 +142,15 @@ void TrayIcon::resolvconfChanged() {
     currentNetworkSignature = "INVALID";
     QSettings settings;
     settings.beginGroup("associations");
-    qDebug() << "I resolvconfChanged, networkSignature: " << networkSignature();
     QString id = settings.value(networkSignature()).toString();
-    qDebug() << "id: " << id;
     if (profileListModel.exists(id)) {
         activateProfile(id);
         makeContextMenu();
     }
     else if (id != "") {
-        qDebug() << "Fjerner: " << networkSignature();
         settings.remove(networkSignature());
     }
     settings.endGroup();
-    qDebug() << "resolvconf changed";
     // If the file has been removed, QFileSystemWatcher stops watching it...
     if (! resolvconfWatcher.files().contains("/etc/resolv.conf")) {
        resolvconfWatcher.addPath("/etc/resolv.conf");
@@ -161,9 +167,7 @@ QString TrayIcon::networkSignature() {
             bool foundSome = false;
             while (! stream.atEnd()) {
                 QString line = stream.readLine();
-                qDebug() << "Reading " << line;
                 if (notWhiteSpace(line)) {
-                    qDebug() << "Adding";
                     hash.addData(line.toAscii());
                     foundSome = true;
                 }
@@ -180,7 +184,4 @@ bool TrayIcon::notWhiteSpace(QString& string){
     static QRegExp reg("^\\s*#.*$|^\\s*$");
     return ! reg.exactMatch(string);
 }
-
-QDir TrayIcon::settingsDir;
-
 

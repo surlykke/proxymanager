@@ -32,7 +32,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 #include <QTextStream>
-
+#include <QProcess>
 
 class TrayIcon : public QSystemTrayIcon
 {
@@ -41,7 +41,6 @@ class TrayIcon : public QSystemTrayIcon
 public:
     TrayIcon(QWidget* parent = 0);
     void makeContextMenu();
-    static QDir settingsDir;
 
 public slots:
     void chooseProfile(QAction *action);
@@ -55,15 +54,13 @@ private:
     void writeForProtocol(QVariantMap& profile, QString protocol, QTextStream& textStream);
     QUrl proxySettingUrl;
     ProfileListModel profileListModel;
-    QUrl proxySetting;
-    QUrl currentProxySetting;
     void notify(QString summary, QString message);
     bool notWhiteSpace(QString& string);
     QString networkSignature();
     QString currentNetworkSignature;
     QString currentProfileId;
     QFileSystemWatcher resolvconfWatcher;
-
+    QProcess cntlmProcess;
 };
 
 #endif // TRAYICON_H

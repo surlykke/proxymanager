@@ -20,11 +20,13 @@ SOURCES += profilelistmodel.cpp \
     main.cpp \
     trayicon.cpp \
     profiledialog.cpp \
-    notifications.cpp
+    notifications.cpp \
+    profile.cpp
 HEADERS += profilelistmodel.h \
     trayicon.h \
     profiledialog.h \
-    notifications.h
+    notifications.h \
+    profile.h
 FORMS += profilemanager.ui
 OTHER_FILES += icons/icon.png \
                icons/icon.svg \
@@ -34,6 +36,8 @@ RESOURCES += \
 LIBS += -L/usr/lib/ -lqjson
 target.path = /usr/local/bin
 INSTALLS += target
+
+
 
 
 

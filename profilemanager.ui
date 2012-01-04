@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>484</width>
-    <height>349</height>
+    <height>457</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,177 +44,142 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>159</y>
+     <y>160</y>
      <width>470</width>
-     <height>140</height>
+     <height>251</height>
     </rect>
    </property>
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>13</y>
-      <width>430</width>
-      <height>83</height>
+      <x>6</x>
+      <y>8</y>
+      <width>450</width>
+      <height>60</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout_3">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="useProxyCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="1">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Use http proxy:</string>
+        <string>Use proxy:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QLineEdit" name="httpProxyHostInput">
+      <widget class="QLineEdit" name="hostInput">
        <property name="enabled">
         <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="4">
-      <widget class="QSpinBox" name="httpProxyPortInput">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="maximum">
-        <number>65535</number>
        </property>
       </widget>
      </item>
      <item row="0" column="3">
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>:</string>
+      <widget class="QSpinBox" name="portInput">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="useHttpProxyCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="useHttpsProxyCheckBox">
-       <property name="text">
-        <string/>
+       <property name="maximum">
+        <number>65535</number>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Use https Proxy:</string>
+        <string>No proxy for:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QLineEdit" name="httpsProxyHostInput">
+     <item row="1" column="2" colspan="2">
+      <widget class="QLineEdit" name="exceptionsInput">
        <property name="enabled">
         <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QLabel" name="label_17">
-       <property name="text">
-        <string>:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4">
-      <widget class="QSpinBox" name="httpsProxyPortInput">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="maximum">
-        <number>65535</number>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QCheckBox" name="useFtpProxyCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Use ftp proxy:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QLineEdit" name="ftpProxyHostInput">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="3">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="4">
-      <widget class="QSpinBox" name="ftpProxyPortInput">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="maximum">
-        <number>65535</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="5">
-      <widget class="QToolButton" name="sameProxyButton">
-       <property name="text">
-        <string>...</string>
-       </property>
-       <property name="icon">
-        <iconset resource="pm_client.qrc">
-         <normaloff>:/icons/downarrow.svg</normaloff>:/icons/downarrow.svg</iconset>
        </property>
       </widget>
      </item>
     </layout>
    </widget>
-   <widget class="QLineEdit" name="exceptionsInput">
+   <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>104</x>
-      <y>103</y>
-      <width>346</width>
-      <height>24</height>
+      <x>7</x>
+      <y>80</y>
+      <width>350</width>
+      <height>116</height>
      </rect>
     </property>
-   </widget>
-   <widget class="QLabel" name="label_7">
-    <property name="geometry">
-     <rect>
-      <x>23</x>
-      <y>108</y>
-      <width>80</width>
-      <height>13</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>No proxy for:</string>
-    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="domainInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLineEdit" name="userIdInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLineEdit" name="passwordInput">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Domain:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="useAuthenticationCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Use NTLM authentication</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Userid:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Password:</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QDialogButtonBox" name="profileManagerButtonBox">
    <property name="geometry">
     <rect>
      <x>300</x>
-     <y>310</y>
+     <y>380</y>
      <width>160</width>
      <height>25</height>
     </rect>

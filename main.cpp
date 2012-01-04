@@ -20,17 +20,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("surlykke-it.dk");
     QCoreApplication::setApplicationName("ProxyManager");
 
-    QString settingsDir =  QFileInfo(QSettings().fileName()).dir().absolutePath();
-    TrayIcon::settingsDir.mkpath(settingsDir);
-    TrayIcon::settingsDir.cd(settingsDir);
-
-    QString profilesDir = settingsDir + "/proxymanager_profiles";
-    ProfileListModel::profilesDir.mkpath(profilesDir);
-    ProfileListModel::profilesDir.cd(profilesDir);
-
-    qDebug() << "settingsDir: " << TrayIcon::settingsDir.absolutePath();
-    qDebug() << "profilesdir: " << ProfileListModel::profilesDir.absolutePath();
-
     TrayIcon trayIcon;
     trayIcon.show();
 

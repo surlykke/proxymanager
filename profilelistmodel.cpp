@@ -12,7 +12,7 @@
 #include "qjson/serializer.h"
 #include <QFile>
 #include <QSettings>
-
+#include "profile.h"
 
 ProfileListModel::ProfileListModel(QObject *parent) : QStandardItemModel(parent) {
     loadProfiles();
@@ -39,31 +39,9 @@ bool ProfileListModel::exists(QString id) {
     return false;
 }
 
-void ProfileListModel::sameProxy(int row) {
-    if (row >= 0 && row < rowCount()) {
-        item(row, USE_HTTPS)->setData(item(row, USE_HTTP)->data(Qt::DisplayRole), Qt::DisplayRole);
-        item(row, HTTPS_HOST)->setData(item(row, HTTP_HOST)->data(Qt::DisplayRole), Qt::DisplayRole);
-        item(row, HTTPS_PORT)->setData(item(row, HTTP_PORT)->data(Qt::DisplayRole), Qt::DisplayRole);
-        item(row, USE_FTP)->setData(item(row, USE_HTTP)->data(Qt::DisplayRole), Qt::DisplayRole);
-        item(row, FTP_HOST)->setData(item(row, HTTP_HOST)->data(Qt::DisplayRole), Qt::DisplayRole);
-        item(row, FTP_PORT)->setData(item(row, HTTP_PORT)->data(Qt::DisplayRole), Qt::DisplayRole);
-    }
-}
-
 bool ProfileListModel::newProfile() {
-    QVariantMap profile;
-    QString id = QUuid::createUuid().toString();
-    // Strip leading '{' and trailing '}'
-    id = id.right(id.size() - 1);
-    id = id.left(id.size() - 1);
-    qDebug() << "id: " << id;
-    profile["id"] = id;
-    profile["name"] = "New profile...";
-    QFile settingsFile(profilesDir.absolutePath() + "/" + id);
-    settingsFile.open(QIODevice::WriteOnly);
-    settingsFile.write(QJson::Serializer().serialize(profile));
-    settingsFile.close();
-    createdProfiles << id;
+    Profile profile = Profile::newProfile();
+    createdProfiles << profile.id;
     append(profile);
     return true;
 }
@@ -75,25 +53,22 @@ void ProfileListModel::deleteProfile(int row) {
     }
 }
 
-QVariantMap ProfileListModel::id2map(QString id) {
+Profile ProfileListModel::id2profile(QString id) {
     for (int row = 0; row < rowCount(); row++) {
         if (id == item(row, ID)->data(Qt::DisplayRole).toString()) {
-            return row2Map(row);
+            return row2profile(row);
         }
     }
-    return QVariantMap();
+    return Profile();
 }
 
 bool ProfileListModel::loadProfiles() {
-    QStringList settingsFiles = profilesDir.entryList(QDir::Files);
-    QStringList::Iterator it;
-    QJson::Parser parser;
-    for (it = settingsFiles.begin(); it != settingsFiles.end(); it++) {
-        qDebug() << "Læser: " << profilesDir.absoluteFilePath(*it);
-        QFile settingsFile(profilesDir.absoluteFilePath(*it));
-        QVariantMap settings = QJson::Parser().parse(&settingsFile).toMap();
-        qDebug() << "Appender: " << settings;
-        append(settings);
+    clear();
+    QList<Profile> profiles = Profile::loadAll();
+    Profile profile;
+    foreach (profile, profiles) {
+        qDebug() << "Appending: " << profile;
+        append(profile);
     }
 
     pendingDeletes.clear();
@@ -102,17 +77,14 @@ bool ProfileListModel::loadProfiles() {
 }
 
 bool ProfileListModel::commit() {
-    QStringList::iterator it;
-    for (it = pendingDeletes.begin(); it != pendingDeletes.end(); it++) {
-        QFile(profilesDir.absolutePath() + "/" + *it).remove();
+    QString id;
+    foreach (id, pendingDeletes) {
+        Profile::deleteProfile(id);
     }
 
     // FIXME only save changed profiles
     for (int row = 0; row < rowCount(); row++) {
-        QFile settingsFile(profilesDir.absolutePath() + "/" + item(row, ID)->data(Qt::DisplayRole).toString());
-        settingsFile.open(QIODevice::WriteOnly);
-        settingsFile.write(QJson::Serializer().serialize(row2Map(row)));
-        settingsFile.close();
+        row2profile(row).save();
     }
 
     pendingDeletes.clear();
@@ -122,9 +94,9 @@ bool ProfileListModel::commit() {
 }
 
 bool ProfileListModel::rollback() {
-    QStringList::iterator it;
-    for (it = createdProfiles.begin(); it != createdProfiles.end(); it++) {
-        QFile(profilesDir.absolutePath() + "/" + *it).remove();
+    QString id;
+    foreach (id, createdProfiles) {
+        Profile::deleteProfile(id);
     }
 
     loadProfiles();
@@ -135,43 +107,31 @@ bool ProfileListModel::rollback() {
 }
 
 
-void ProfileListModel::append(QVariantMap &profile) {
+void ProfileListModel::append(Profile &profile) {
     int row = rowCount();
-    setItem(row, NAME, new QStandardItem(profile["name"].toString()));
-    setItem(row, ID, new QStandardItem(profile["id"].toString()));
-    setItem(row, USE_HTTP, new QStandardItem(profile["httpProxy"].toMap()["useProxy"].toString()));
-    setItem(row, HTTP_HOST, new QStandardItem(profile["httpProxy"].toMap()["host"].toString()));
-    setItem(row, HTTP_PORT, new QStandardItem(profile["httpProxy"].toMap()["port"].toString()));
-    setItem(row, USE_HTTPS, new QStandardItem(profile["httpProxy"].toMap()["useProxy"].toString()));
-    setItem(row, HTTPS_HOST, new QStandardItem(profile["httpProxy"].toMap()["host"].toString()));
-    setItem(row, HTTPS_PORT, new QStandardItem(profile["httpProxy"].toMap()["port"].toString()));
-    setItem(row, USE_FTP, new QStandardItem(profile["httpProxy"].toMap()["useProxy"].toString()));
-    setItem(row, FTP_HOST, new QStandardItem(profile["httpProxy"].toMap()["host"].toString()));
-    setItem(row, FTP_PORT, new QStandardItem(profile["httpProxy"].toMap()["port"].toString()));
-    setItem(row, EXCEPTIONS, new QStandardItem(profile["exceptions"].toString()));
+    setItem(row, NAME, new QStandardItem(profile.name));
+    setItem(row, ID, new QStandardItem(profile.id));
+    setItem(row, USE_PROXY, new QStandardItem(profile.useProxy ? "true" : "false"));
+    setItem(row, HOST, new QStandardItem(profile.host));
+    setItem(row, PORT, new QStandardItem(QString::number(profile.port)));
+    setItem(row, EXCEPTIONS, new QStandardItem(profile.exceptions));
+    setItem(row, USE_AUTHENTICATION, new QStandardItem(profile.useAuthentication ? "true" : "false"));
+    setItem(row, NTDOMAIN, new QStandardItem(profile.ntDomain));
+    setItem(row, USERID, new QStandardItem(profile.userId));
+    setItem(row, PASSWORD, new QStandardItem(profile.password));
 }
 
-QVariantMap ProfileListModel::row2Map(int row) {
-    QVariantMap map;
-    map["name"] = item(row, NAME)->data(Qt::DisplayRole).toString();
-    map["id"] = item(row, ID)->data(Qt::DisplayRole).toString();
-    QVariantMap httpProxy;
-    httpProxy["useProxy"] = item(row, USE_HTTP)->data(Qt::DisplayRole).toBool();
-    httpProxy["host"] = item(row, HTTP_HOST)->data(Qt::DisplayRole).toString();
-    httpProxy["port"] = item(row, HTTP_PORT)->data(Qt::DisplayRole).toInt();
-    map["httpProxy"] = httpProxy;
-    QVariantMap httpsProxy;
-    httpsProxy["useProxy"] = item(row, USE_HTTPS)->data(Qt::DisplayRole).toBool();
-    httpsProxy["host"] = item(row, HTTPS_HOST)->data(Qt::DisplayRole).toString();
-    httpsProxy["port"] = item(row, HTTPS_PORT)->data(Qt::DisplayRole).toInt();
-    map["httpsProxy"] = httpsProxy;
-    QVariantMap ftpProxy;
-    ftpProxy["useProxy"] = item(row, USE_FTP)->data(Qt::DisplayRole).toBool();
-    ftpProxy["host"] = item(row, FTP_HOST)->data(Qt::DisplayRole).toString();
-    ftpProxy["port"] = item(row, FTP_PORT)->data(Qt::DisplayRole).toInt();
-    map["ftpProxy"] = ftpProxy;
-    map["exceptions"] = item(row, EXCEPTIONS)->data(Qt::DisplayRole).toString();
-    return map;
+Profile ProfileListModel::row2profile(int row) {
+    Profile profile;
+    profile.name = item(row, NAME)->data(Qt::DisplayRole).toString();
+    profile.id = item(row, ID)->data(Qt::DisplayRole).toString();
+    profile.useProxy = item(row, USE_PROXY)->data(Qt::DisplayRole).toBool();
+    profile.host = item(row, HOST)->data(Qt::DisplayRole).toString();
+    profile.port = item(row, PORT)->data(Qt::DisplayRole).toInt();
+    profile.exceptions = item(row, EXCEPTIONS)->data(Qt::DisplayRole).toString();
+    profile.useAuthentication = item(row, USE_AUTHENTICATION)->data(Qt::DisplayRole).toBool();
+    profile.ntDomain = item(row, NTDOMAIN)->data(Qt::DisplayRole).toString();
+    profile.userId = item(row, USERID)->data(Qt::DisplayRole).toString();
+    profile.password = item(row, PASSWORD)->data(Qt::DisplayRole).toString();
+    return profile;
 }
-
-QDir ProfileListModel::profilesDir;

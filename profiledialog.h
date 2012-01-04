@@ -39,7 +39,6 @@ public:
 public slots:
   void newProfile();
   void deleteProfile();
-  void sameProxy();
   void selectionChanged(QItemSelection start, QItemSelection end);
   virtual void accept();
   virtual void reject();

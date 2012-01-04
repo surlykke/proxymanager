@@ -19,34 +19,32 @@ ProfileDialog::ProfileDialog(QString selectedProfileId, ProfileListModel* profil
     m_ui->profileList->setModel(profileListModel);
     mapper = new QDataWidgetMapper(this);
     mapper->setModel(profileListModel);
-    mapper->addMapping(m_ui->useHttpProxyCheckBox, ProfileListModel::USE_HTTP);
-    mapper->addMapping(m_ui->httpProxyHostInput, ProfileListModel::HTTP_HOST);
-    mapper->addMapping(m_ui->httpProxyPortInput, ProfileListModel::HTTP_PORT);
-    mapper->addMapping(m_ui->useHttpsProxyCheckBox, ProfileListModel::USE_HTTPS);
-    mapper->addMapping(m_ui->httpsProxyHostInput, ProfileListModel::HTTPS_HOST);
-    mapper->addMapping(m_ui->httpsProxyPortInput, ProfileListModel::HTTPS_PORT);
-    mapper->addMapping(m_ui->useFtpProxyCheckBox, ProfileListModel::USE_FTP);
-    mapper->addMapping(m_ui->ftpProxyHostInput, ProfileListModel::FTP_HOST);
-    mapper->addMapping(m_ui->ftpProxyPortInput, ProfileListModel::FTP_PORT);
+    mapper->addMapping(m_ui->useProxyCheckBox, ProfileListModel::USE_PROXY);
+    mapper->addMapping(m_ui->hostInput, ProfileListModel::HOST);
+    mapper->addMapping(m_ui->portInput, ProfileListModel::PORT);
     mapper->addMapping(m_ui->exceptionsInput, ProfileListModel::EXCEPTIONS);
+    mapper->addMapping(m_ui->useAuthenticationCheckBox, ProfileListModel::USE_AUTHENTICATION);
+    mapper->addMapping(m_ui->domainInput, ProfileListModel::NTDOMAIN);
+    mapper->addMapping(m_ui->userIdInput, ProfileListModel::USERID);
+    mapper->addMapping(m_ui->passwordInput, ProfileListModel::PASSWORD);
     connect(m_ui->profileList->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(selectionChanged(QItemSelection, QItemSelection)));
     connect(m_ui->newProfileButton, SIGNAL(clicked()), this, SLOT(newProfile()));
     connect(m_ui->deleteProfileButton, SIGNAL(clicked()), this, SLOT(deleteProfile()));
-    connect(m_ui->sameProxyButton, SIGNAL(clicked()), this, SLOT(sameProxy()));
     connect(m_ui->profileManagerButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
     connect(m_ui->profileManagerButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
 
-    connect(m_ui->useHttpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpProxyHostInput, SLOT(setEnabled(bool)));
-    connect(m_ui->useHttpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpProxyPortInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useProxyCheckBox, SIGNAL(toggled(bool)), m_ui->hostInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useProxyCheckBox, SIGNAL(toggled(bool)), m_ui->portInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useProxyCheckBox, SIGNAL(toggled(bool)), m_ui->exceptionsInput, SLOT(setEnabled(bool)));
 
-    connect(m_ui->useHttpsProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpsProxyHostInput, SLOT(setEnabled(bool)));
-    connect(m_ui->useHttpsProxyCheckBox, SIGNAL(toggled(bool)), m_ui->httpsProxyPortInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), m_ui->domainInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), m_ui->userIdInput, SLOT(setEnabled(bool)));
+    connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), m_ui->passwordInput, SLOT(setEnabled(bool)));
 
-    connect(m_ui->useFtpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->ftpProxyHostInput, SLOT(setEnabled(bool)));
-    connect(m_ui->useFtpProxyCheckBox, SIGNAL(toggled(bool)), m_ui->ftpProxyPortInput, SLOT(setEnabled(bool)));
-
+    qDebug() << "Ind i profileDialog";
     for (int row = 0; row < profileListModel->rowCount(); row++) {
+        qDebug() << profileListModel->item(row, ProfileListModel::NAME) << " - useProxy: " << profileListModel->item(row, ProfileListModel::USE_PROXY)->data(Qt::DisplayRole);
         if (profileListModel->id(row) == selectedProfileId) {
             select(row);
             break;
@@ -86,12 +84,6 @@ void ProfileDialog::newProfile() {
 void ProfileDialog::deleteProfile() {
     profileListModel->deleteProfile(currentSelection());
 }
-
-void ProfileDialog::sameProxy() {
-    m_ui->sameProxyButton->setFocus();
-    profileListModel->sameProxy(mapper->currentIndex());
-}
-
 
 int ProfileDialog::currentSelection() {
     QModelIndexList indexes = m_ui->profileList->selectionModel()->selectedIndexes();
