@@ -28,6 +28,11 @@ TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
     connect(&resolvconfWatcher, SIGNAL(fileChanged(QString)), this, SLOT(resolvconfChanged()));
 }
 
+void TrayIcon::close() {
+    qDebug() << "Så er vi her..";
+    cntlmProcess.close();
+}
+
 void TrayIcon::makeContextMenu() {
     if (contextMenu() == 0) {
         setContextMenu(new QMenu());
@@ -72,7 +77,7 @@ void TrayIcon::chooseProfile(QAction *action) {
 void TrayIcon::activateProfile(QString profileId) {
     qDebug() << cntlmProcess.readAllStandardError();
     if (cntlmProcess.state() != QProcess::NotRunning) {
-        cntlmProcess.close();
+        cntlmProcess.kill();
     }
 
     Profile profile = profileListModel.id2profile(profileId);
@@ -130,7 +135,7 @@ void TrayIcon::manageProfiles() {
 
 
 void TrayIcon::exitProxyManager() {
-    exit(0);
+    QCoreApplication::exit(0);
 }
 
 
@@ -153,7 +158,7 @@ void TrayIcon::resolvconfChanged() {
     settings.endGroup();
     // If the file has been removed, QFileSystemWatcher stops watching it...
     if (! resolvconfWatcher.files().contains("/etc/resolv.conf")) {
-       resolvconfWatcher.addPath("/etc/resolv.conf");
+        resolvconfWatcher.addPath("/etc/resolv.conf");
     }
 }
 

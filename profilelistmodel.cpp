@@ -67,7 +67,6 @@ bool ProfileListModel::loadProfiles() {
     QList<Profile> profiles = Profile::loadAll();
     Profile profile;
     foreach (profile, profiles) {
-        qDebug() << "Appending: " << profile;
         append(profile);
     }
 

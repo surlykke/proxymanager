@@ -42,9 +42,7 @@ ProfileDialog::ProfileDialog(QString selectedProfileId, ProfileListModel* profil
     connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), m_ui->userIdInput, SLOT(setEnabled(bool)));
     connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), m_ui->passwordInput, SLOT(setEnabled(bool)));
 
-    qDebug() << "Ind i profileDialog";
     for (int row = 0; row < profileListModel->rowCount(); row++) {
-        qDebug() << profileListModel->item(row, ProfileListModel::NAME) << " - useProxy: " << profileListModel->item(row, ProfileListModel::USE_PROXY)->data(Qt::DisplayRole);
         if (profileListModel->id(row) == selectedProfileId) {
             select(row);
             break;

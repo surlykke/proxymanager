@@ -50,13 +50,11 @@ QList<Profile> Profile::loadAll() {
     QList<Profile> result;
     QSettings settings;
     settings.beginGroup("profiles");
-    qDebug() << "childGroups: " << settings.childGroups();
     QString id;
     foreach (id, settings.childGroups()) {
        Profile profile;
        profile.id = id;
        profile.load();
-       qDebug() << "loaded: " << profile;
        result << profile;
     }
     settings.endGroup();

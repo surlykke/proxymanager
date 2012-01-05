@@ -43,6 +43,7 @@ public:
     void makeContextMenu();
 
 public slots:
+    void close();
     void chooseProfile(QAction *action);
     void manageProfiles();
     void exitProxyManager();
