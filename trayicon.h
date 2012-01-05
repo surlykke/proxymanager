@@ -52,7 +52,6 @@ public slots:
 
 private:
     void activateProfile(QString profileId);
-    void writeForProtocol(QVariantMap& profile, QString protocol, QTextStream& textStream);
     QUrl proxySettingUrl;
     ProfileListModel profileListModel;
     void notify(QString summary, QString message);

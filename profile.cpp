@@ -8,7 +8,6 @@
 void Profile::save() {
     QString prefix = "profiles/" + id + "/";
     QSettings settings;
-    qDebug() << "Looking for \"" << (prefix + "id") << "\"";
     if (settings.contains(prefix + "id")) {
         settings.setValue(prefix + "name", name);
         settings.setValue(prefix + "useProxy", useProxy);

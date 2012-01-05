@@ -29,7 +29,6 @@ TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
 }
 
 void TrayIcon::close() {
-    qDebug() << "Så er vi her..";
     cntlmProcess.close();
 }
 
@@ -75,9 +74,8 @@ void TrayIcon::chooseProfile(QAction *action) {
 }
 
 void TrayIcon::activateProfile(QString profileId) {
-    qDebug() << cntlmProcess.readAllStandardError();
     if (cntlmProcess.state() != QProcess::NotRunning) {
-        cntlmProcess.kill();
+        cntlmProcess.close();
     }
 
     Profile profile = profileListModel.id2profile(profileId);
@@ -98,24 +96,9 @@ void TrayIcon::activateProfile(QString profileId) {
     }
     cntlmProcess.setReadChannel(QProcess::StandardError);
     cntlmProcess.start("cntlm", args);
+    currentProfileId = profile.id;
+    makeContextMenu();
 }
-
-void TrayIcon::writeForProtocol(QVariantMap& profile, QString protocol, QTextStream& textStream) {
-    QString key = protocol + "Proxy";
-    qDebug() << "Kigger efter: " << key;
-    qDebug() << "profile.contains(\"" << key << "\"): " << profile.contains(key);
-    qDebug() << "useProxy: " << profile.value(key).toMap().value("useProxy").toBool();
-    if (profile.contains(key) && profile.value(key).toMap().value("useProxy").toBool()) {
-            textStream << "ProxyRemote "
-                       << protocol << " "
-                       << profile.value(key).toMap().value("host").toString()
-                       << ":"
-                       << profile.value(key).toMap().value("port").toString()
-                       << "\n";
-    }
-}
-
-
 
 
 void TrayIcon::manageProfiles() {
@@ -144,6 +127,7 @@ void TrayIcon::notify(QString summary, QString message) {
 }
 
 void TrayIcon::resolvconfChanged() {
+
     currentNetworkSignature = "INVALID";
     QSettings settings;
     settings.beginGroup("associations");
