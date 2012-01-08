@@ -40,3 +40,5 @@ QT4_WRAP_CPP(MOCS ${proxymanager_MOCS})
 
 add_executable ( proxymanager ${proxymanager_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
 target_link_libraries ( proxymanager  ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTNETWORK_LIBRARY} )
+
+install(TARGETS proxymanager DESTINATION /usr/local/bin CONFIGURATIONS Release)
