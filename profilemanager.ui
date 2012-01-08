@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2011 Christian Surlykke
+
+  This file is part of ProxyManager
+
+  ProxyManager is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, version 3
+
+  ProxyManager is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with ProxyManager.  If not, see <http://www.gnu.org/licenses/>.
+-->
 <ui version="4.0">
  <class>ProfileManager</class>
  <widget class="QDialog" name="ProfileManager">
@@ -230,7 +247,7 @@ p, li { white-space: pre-wrap; }
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap resource="proxymanager.qrc">:/icons/icon.png</pixmap>
+    <pixmap resource="proxymanager.qrc">:/icons/icon.svg</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
