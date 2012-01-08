@@ -1,4 +1,4 @@
-#  Copyright 2011, 2012 Christian Surlykke
+#  Copyright 2011, 2012, 2012 Christian Surlykke
 #
 #  This file is part of ProxyManager
 #
