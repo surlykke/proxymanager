@@ -26,7 +26,6 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <QProcess>
-#include "qjson/parser.h"
 #include "notifications.h"
 #include <QFileSystemWatcher>
 #include <QFile>

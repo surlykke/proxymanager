@@ -18,8 +18,6 @@
 #include <QUuid>
 #include "profilelistmodel.h"
 #include <QMessageBox>
-#include "qjson/parser.h"
-#include "qjson/serializer.h"
 #include <QFile>
 #include <QSettings>
 #include "profile.h"
