@@ -110,7 +110,7 @@ void TrayIcon::activateProfile(QString profileId) {
         args << "-N" << "*";
         args << "dummy" << "1234";
     }
-    cntlmProcess.setReadChannel(QProcess::StandardError);
+    cntlmProcess.setProcessChannelMode(QProcess::ForwardedChannels);
     cntlmProcess.start("cntlm", args);
     currentProfileId = profile.id;
     makeContextMenu();
