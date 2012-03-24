@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>icons/icon.svg</file>
-        <file>icons/icon.png</file>
+        <file>icons/proxymanager.png</file>
+        <file>icons/proxymanager.svg</file>
     </qresource>
 </RCC>

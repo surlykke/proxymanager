@@ -31,7 +31,7 @@
 #include <QFile>
 
 TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
-    setIcon(QIcon(":icons/icon.png"));
+    setIcon(QIcon(":icons/proxymanager.png"));
 
     makeContextMenu();
     connect(contextMenu(), SIGNAL(triggered(QAction*)), this, SLOT(chooseProfile(QAction*)));

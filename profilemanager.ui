@@ -247,7 +247,7 @@ p, li { white-space: pre-wrap; }
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap resource="proxymanager.qrc">:/icons/icon.png</pixmap>
+    <pixmap resource="proxymanager.qrc">:/icons/proxymanager.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
