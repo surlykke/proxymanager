@@ -130,6 +130,7 @@ void TrayIcon::manageProfiles() {
     profileManager.setAttribute(Qt::WA_QuitOnClose, false);
     profileManager.exec();
     makeContextMenu();
+    activateProfile(currentProfileId);
 }
 
 
