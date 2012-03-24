@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=proxymanager
+Icon=proxymanager
+Terminal=false
+Categories=Application;Qt;Utility
+Name=Proxy Manager
+GenericName=Proxy Management
