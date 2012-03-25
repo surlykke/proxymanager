@@ -29,12 +29,13 @@
 #include "notifications.h"
 #include <QFileSystemWatcher>
 #include <QFile>
+#include <QSettings>
 
 TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
     setIcon(QIcon(":icons/proxymanager.png"));
 
     makeContextMenu();
-    connect(contextMenu(), SIGNAL(triggered(QAction*)), this, SLOT(chooseProfile(QAction*)));
+    //connect(contextMenu(), SIGNAL(triggered(QAction*)), this, SLOT(chooseProfile(QAction*)));
 
     // Force setup
     resolvconfChanged();
@@ -57,15 +58,15 @@ void TrayIcon::makeContextMenu() {
     }
 
     QActionGroup* profileGroup = new QActionGroup(this);
-    for(int row = 0; row < profileListModel.rowCount(); row++) {
-        QAction* profileAction = contextMenu()->addAction(profileListModel.name(row));
-        profileAction->setData(profileListModel.id(row));
+    QSettings settings;
+    settings.beginGroup("profiles");
+    foreach (QString profileName, settings.childGroups()) {
+        QAction* profileAction = contextMenu()->addAction(profileName);
         profileAction->setCheckable(true);
+        profileAction->setChecked(profileName == currentProfileName);
         profileGroup->addAction(profileAction);
-        if (profileAction->data() == currentProfileId) {
-            profileAction->setChecked(true);
-        }
     }
+    connect(profileGroup, SIGNAL(triggered(QAction*)), this, SLOT(chooseProfile(QAction*)));
 
     contextMenu()->addSeparator();
 
@@ -79,32 +80,42 @@ void TrayIcon::makeContextMenu() {
 }
 
 void TrayIcon::chooseProfile(QAction *action) {
-    if (action->data().type() == QVariant::String) {
-        QString profileId = action->data().toString();
-        QSettings settings;
-        settings.beginGroup("associations");
-        settings.setValue(networkSignature(), profileId);
-        settings.endGroup();
-        activateProfile(profileId);
-    }
+    QSettings settings;
+    settings.beginGroup("associations");
+    settings.setValue(networkSignature(), action->text());
+    activateProfile(action->text());
 }
 
-void TrayIcon::activateProfile(QString profileId) {
+void TrayIcon::activateProfile(QString profileName ) {
+    qDebug() << "activateProfile: " << profileName;
     if (cntlmProcess.state() != QProcess::NotRunning) {
         cntlmProcess.close();
     }
 
-    Profile profile = profileListModel.id2profile(profileId);
+    QSettings settings;
+    settings.beginGroup("profiles");
+    settings.beginGroup(profileName);
+
     QStringList args;
     args << "-f" << "-v" << "-l" << "7938";
-    if (profile.useAuthentication) {
-        args << "-u" << (profile.userId + "@" + profile.ntDomain) << "-p" << profile.password;
+    bool useAuthentication = settings.value(USEAUTHENTICATION).toBool();
+    if (useAuthentication) {
+        QString userId = settings.value(USERID).toString();
+        QString ntDomain = settings.value(NTDOMAIN).toString();
+        QString passWord = settings.value(PASSWORD).toString();
+        args << "-u" << ( userId + "@" + ntDomain) << "-p" << passWord;
     }
-    if (profile.useProxy) {
-        if (profile.exceptions.trimmed().size() > 0) {
-            args << "-N" << profile.exceptions;
+
+    bool useProxy = settings.value(USEPROXY).toBool();
+    if (useProxy) {
+        QString exceptions =settings.value(EXCEPTIONS).toString();
+        if (exceptions.trimmed().size() > 0) {
+            args << "-N" << exceptions;
         }
-        args << profile.host << QString::number(profile.port);
+
+        QString host = settings.value(HOST).toString();
+        QString port = settings.value(PORT).toString();
+        args << host << port;
     }
     else {
         args << "-N" << "*";
@@ -112,25 +123,26 @@ void TrayIcon::activateProfile(QString profileId) {
     }
     cntlmProcess.setProcessChannelMode(QProcess::ForwardedChannels);
     cntlmProcess.start("cntlm", args);
-    currentProfileId = profile.id;
+    currentProfileName = profileName;
     makeContextMenu();
 }
 
 
 void TrayIcon::manageProfiles() {
+    qDebug() << "manageProfiles..";
     QString selectedId;
     for (int i = 0; i < contextMenu()->actions().size(); i++) {
         if (contextMenu()->actions().at(i)->isChecked()) {
-            selectedId = contextMenu()->actions().at(i)->data().toString();
+            selectedId = contextMenu()->actions().at(i)->text();
             break;
         }
     }
 
-    ProfileDialog profileManager(selectedId, &profileListModel);
+    ProfileDialog profileManager(selectedId);
     profileManager.setAttribute(Qt::WA_QuitOnClose, false);
     profileManager.exec();
     makeContextMenu();
-    activateProfile(currentProfileId);
+    activateProfile(currentProfileName);
 }
 
 
@@ -147,16 +159,19 @@ void TrayIcon::resolvconfChanged() {
 
     currentNetworkSignature = "INVALID";
     QSettings settings;
-    settings.beginGroup("associations");
-    QString id = settings.value(networkSignature()).toString();
-    if (profileListModel.exists(id)) {
-        activateProfile(id);
+    QString profileName = settings.value("associations/" + networkSignature()).toString();
+
+    settings.beginGroup("profiles");
+    QStringList profiles = settings.childGroups();
+    settings.endGroup();
+    if (profiles.contains(profileName)) {
+        activateProfile(profileName);
         makeContextMenu();
     }
-    else if (id != "") {
-        settings.remove(networkSignature());
+    else {
+        settings.remove("associations/" + networkSignature());
     }
-    settings.endGroup();
+
     // If the file has been removed, QFileSystemWatcher stops watching it...
     if (! resolvconfWatcher.files().contains("/etc/resolv.conf")) {
         resolvconfWatcher.addPath("/etc/resolv.conf");

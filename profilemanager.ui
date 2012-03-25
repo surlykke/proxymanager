@@ -1,21 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Copyright 2011, 2012 Christian Surlykke
-
-  This file is part of ProxyManager
-
-  ProxyManager is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, version 3
-
-  ProxyManager is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with ProxyManager.  If not, see <http://www.gnu.org/licenses/>.
--->
 <ui version="4.0">
  <class>ProfileManager</class>
  <widget class="QDialog" name="ProfileManager">
@@ -47,7 +30,7 @@ p, li { white-space: pre-wrap; }
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Manage Profiles&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
-  <widget class="QListView" name="profileList">
+  <widget class="QListWidget" name="profileList">
    <property name="geometry">
     <rect>
      <x>29</x>
@@ -198,14 +181,14 @@ p, li { white-space: pre-wrap; }
   <widget class="QDialogButtonBox" name="profileManagerButtonBox">
    <property name="geometry">
     <rect>
-     <x>300</x>
+     <x>20</x>
      <y>380</y>
-     <width>160</width>
+     <width>450</width>
      <height>25</height>
     </rect>
    </property>
    <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <set>QDialogButtonBox::Close|QDialogButtonBox::Reset</set>
    </property>
   </widget>
   <widget class="QPushButton" name="newProfileButton">
@@ -258,6 +241,14 @@ p, li { white-space: pre-wrap; }
   <tabstop>profileList</tabstop>
   <tabstop>newProfileButton</tabstop>
   <tabstop>deleteProfileButton</tabstop>
+  <tabstop>useProxyCheckBox</tabstop>
+  <tabstop>hostInput</tabstop>
+  <tabstop>portInput</tabstop>
+  <tabstop>exceptionsInput</tabstop>
+  <tabstop>useAuthenticationCheckBox</tabstop>
+  <tabstop>domainInput</tabstop>
+  <tabstop>userIdInput</tabstop>
+  <tabstop>passwordInput</tabstop>
   <tabstop>profileManagerButtonBox</tabstop>
  </tabstops>
  <resources>

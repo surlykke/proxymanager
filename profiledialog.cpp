@@ -16,7 +16,6 @@
   along with ProxyManager.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "profiledialog.h"
-#include "profilelistmodel.h"
 #include "ui_profilemanager.h"
 #include <QtDebug>
 #include <QList>
@@ -26,29 +25,21 @@
 #include <QStandardItemModel>
 #include <QStandardItem>
 #include <QMessageBox>
+#include <QListWidgetItem>
 
-ProfileDialog::ProfileDialog(QString selectedProfileId, ProfileListModel* profileListModel, QWidget * parent) :  QDialog(parent), m_ui(new Ui::ProfileManager) {
-    this->profileListModel = profileListModel;
+ProfileDialog::ProfileDialog(QString profileName, QWidget * parent) :  QDialog(parent), m_ui(new Ui::ProfileManager), selectedProfileName(profileName) {
+    settings.beginGroup("profiles");
+    foreach (QString key, settings.allKeys()) {
+        rollbackPoint.insert(key, settings.value(key));
+    }
+
     m_ui->setupUi(this);
     m_ui->profileBox->setEnabled(false);
-
     m_ui->deleteProfileButton->setEnabled(false);
-    m_ui->profileList->setModel(profileListModel);
-    mapper = new QDataWidgetMapper(this);
-    mapper->setModel(profileListModel);
-    mapper->addMapping(m_ui->useProxyCheckBox, ProfileListModel::USE_PROXY);
-    mapper->addMapping(m_ui->hostInput, ProfileListModel::HOST);
-    mapper->addMapping(m_ui->portInput, ProfileListModel::PORT);
-    mapper->addMapping(m_ui->exceptionsInput, ProfileListModel::EXCEPTIONS);
-    mapper->addMapping(m_ui->useAuthenticationCheckBox, ProfileListModel::USE_AUTHENTICATION);
-    mapper->addMapping(m_ui->domainInput, ProfileListModel::NTDOMAIN);
-    mapper->addMapping(m_ui->userIdInput, ProfileListModel::USERID);
-    mapper->addMapping(m_ui->passwordInput, ProfileListModel::PASSWORD);
-    connect(m_ui->profileList->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(selectionChanged(QItemSelection, QItemSelection)));
+
+    connect(m_ui->profileList, SIGNAL(itemSelectionChanged()), this, SLOT(loadProfile()));
     connect(m_ui->newProfileButton, SIGNAL(clicked()), this, SLOT(newProfile()));
     connect(m_ui->deleteProfileButton, SIGNAL(clicked()), this, SLOT(deleteProfile()));
-    connect(m_ui->profileManagerButtonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect(m_ui->profileManagerButtonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
 
     connect(m_ui->useProxyCheckBox, SIGNAL(toggled(bool)), m_ui->hostInput, SLOT(setEnabled(bool)));
@@ -59,9 +50,30 @@ ProfileDialog::ProfileDialog(QString selectedProfileId, ProfileListModel* profil
     connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), m_ui->userIdInput, SLOT(setEnabled(bool)));
     connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), m_ui->passwordInput, SLOT(setEnabled(bool)));
 
-    for (int row = 0; row < profileListModel->rowCount(); row++) {
-        if (profileListModel->id(row) == selectedProfileId) {
-            select(row);
+    connect(m_ui->useProxyCheckBox, SIGNAL(toggled(bool)), this, SLOT(saveProfile()));
+    connect(m_ui->hostInput, SIGNAL(textChanged(QString)), this, SLOT(saveProfile()));
+    connect(m_ui->portInput, SIGNAL(valueChanged(int)), this, SLOT(saveProfile()));
+    connect(m_ui->exceptionsInput, SIGNAL(textChanged(QString)), this, SLOT(saveProfile()));
+    connect(m_ui->useAuthenticationCheckBox, SIGNAL(toggled(bool)), this, SLOT(saveProfile()));
+    connect(m_ui->domainInput, SIGNAL(textChanged(QString)), this, SLOT(saveProfile()));
+    connect(m_ui->userIdInput, SIGNAL(textChanged(QString)), this, SLOT(saveProfile()));
+    connect(m_ui->passwordInput, SIGNAL(textChanged(QString)), this, SLOT(saveProfile()));
+
+    connect(m_ui->profileList, SIGNAL(currentItemChanged(QListWidgetItem* ,QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*,QListWidgetItem*)));
+    connect(m_ui->profileList, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
+
+    connect(m_ui->profileManagerButtonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(closeOrResetButtonClicked(QAbstractButton*)));
+
+    loadProfiles();
+    setSelection(selectedProfileName);
+}
+
+void ProfileDialog::setSelection(QString profileName) {
+    m_ui->profileList->clearSelection();
+    for (int row = 0; row < m_ui->profileList->count(); row++) {
+        qDebug() << "Sammenligner: " << profileName << " med " << m_ui->profileList->item(row)->text();
+        if (profileName == m_ui->profileList->item(row)->text()) {
+            m_ui->profileList->setCurrentRow(row);
             break;
         }
     }
@@ -71,62 +83,143 @@ ProfileDialog::~ProfileDialog() {
     delete m_ui;
 }
 
-void ProfileDialog::selectionChanged(QItemSelection selected, QItemSelection deselected) {
-    Q_UNUSED(deselected);
-    QModelIndexList indexes = selected.indexes();
-    if (indexes.size() != 1) {
-        m_ui->profileBox->setEnabled(false);
-        m_ui->deleteProfileButton->setEnabled(false);
-        return;
+void ProfileDialog::loadProfiles() {
+    qDebug() << "loadProfiles, selectedProfileName: " << selectedProfileName;
+    currentProfileName = "";
+    m_ui->profileList->clear();
+    foreach (QString profileName, settings.childGroups()) {
+        addItem(profileName);
     }
-    else {
-        m_ui->profileBox->setEnabled(true);
-        m_ui->deleteProfileButton->setEnabled(true);
-        mapper->setCurrentIndex(indexes.at(0).row());
+    setSelection(selectedProfileName);
+}
+
+
+QListWidgetItem* ProfileDialog::addItem(QString profileName) {
+    m_ui->profileList->addItem(profileName);
+    QListWidgetItem *item = m_ui->profileList->item(m_ui->profileList->count() - 1);
+    item->setFlags(Qt::ItemIsEditable | item->flags());
+    return item;
+}
+
+void ProfileDialog::loadProfile() {
+    if (lock.tryLock()) {
+    settings.beginGroup(currentProfileName);
+    m_ui->useProxyCheckBox->setChecked(settings.value(USEPROXY).toBool());
+    m_ui->hostInput->setText(settings.value(HOST).toString());
+    m_ui->portInput->setValue(settings.value(PORT).toInt());
+    m_ui->exceptionsInput->setText(settings.value(EXCEPTIONS).toString());
+    m_ui->useAuthenticationCheckBox->setChecked(settings.value(USEAUTHENTICATION).toBool());
+    m_ui->domainInput->setText(settings.value(NTDOMAIN).toString());
+    m_ui->userIdInput->setText(settings.value(USERID).toString());
+    m_ui->passwordInput->setText(settings.value(PASSWORD).toString());
+    settings.endGroup();
+    lock.unlock();
+    }
+}
+
+void ProfileDialog::saveProfile()
+{
+    if (lock.tryLock()) {
+    qDebug() << "Ind i saveProfile - currentProfileName: " << currentProfileName;
+    settings.beginGroup(currentProfileName);
+    settings.setValue(USEPROXY, m_ui->useProxyCheckBox->isChecked());
+    settings.setValue(HOST, m_ui->hostInput->text());
+    settings.setValue(PORT, m_ui->portInput->value());
+    settings.setValue(EXCEPTIONS, m_ui->exceptionsInput->text());
+    settings.setValue(USEAUTHENTICATION, m_ui->useAuthenticationCheckBox->isChecked());
+    settings.setValue(NTDOMAIN, m_ui->domainInput->text());
+    settings.setValue(USERID, m_ui->userIdInput->text());
+    settings.setValue(PASSWORD, m_ui->passwordInput->text());
+    settings.endGroup();
+    lock.unlock();
+    }
+}
+
+
+
+void ProfileDialog::itemChanged(QListWidgetItem *item, QListWidgetItem *oldItem) {
+    qDebug() << "Ind i itemChanged";
+        if (item == 0) {
+            qDebug() << "Deselection..";
+            m_ui->deleteProfileButton->setEnabled(false);
+            m_ui->profileBox->setEnabled(false);
+        }
+        else {
+            m_ui->deleteProfileButton->setEnabled(true);
+            m_ui->profileBox->setEnabled(true);
+            if (oldItem != item) {
+                qDebug() << "Row selected: " << item->text();
+                currentProfileName = item->text();
+                loadProfile();
+            }
+        }
+        qDebug() << "Ud af itemChanged";
+}
+
+
+void ProfileDialog::itemChanged(QListWidgetItem *item) {
+    if (currentProfileName != "" && currentProfileName != item->text()) {
+        qDebug() << "Ind i den anden itemChanged";
+        qDebug() << "Name edited: " << currentProfileName << " --> " << item->text();
+        settings.remove(currentProfileName);
+        item->setText(newName(item->text())); // Ensure uniqueness
+        currentProfileName = item->text();
+        saveProfile();
     }
 }
 
 void ProfileDialog::newProfile() {
-   if (profileListModel->newProfile()) {
-        select(profileListModel->rowCount() - 1, true);
-   }
-   else {
-       QMessageBox(QMessageBox::Critical, "Error creating new profile...", profileListModel->errorMsg, QMessageBox::NoButton, this).exec();
-   }
-
+    qDebug() << "Ind i newProfile";
+    currentProfileName = "";
+    QListWidgetItem *item = addItem(newName());
+    m_ui->profileList->setCurrentItem(item);
+    currentProfileName = item->text();
+    saveProfile();
+    m_ui->profileList->editItem(item);
+    qDebug() << "Ud af newProfile";
 }
 
-void ProfileDialog::deleteProfile() {
-    profileListModel->deleteProfile(currentSelection());
-}
 
-int ProfileDialog::currentSelection() {
-    QModelIndexList indexes = m_ui->profileList->selectionModel()->selectedIndexes();
-    if (! indexes.isEmpty()) {
-        return indexes[0].row();
+QString ProfileDialog::newName(QString hint) {
+    qDebug() << "C: " << settings.group() << ", childgroups: " << settings.childGroups();
+    hint = hint.trimmed();
+    if (hint == "") {
+        hint = "Profile";
+    }
+    if (! settings.childGroups().contains(hint)) {
+        return hint;
     }
     else {
-        return -1;
+        for (int i = 2; ; i++) {
+            QString newSuggestion = hint + " (" + QString::number(i) + ")";
+            if (! settings.childGroups().contains(newSuggestion)) {
+                return newSuggestion;
+            }
+        }
     }
 }
 
 
-void ProfileDialog::accept() {
-    profileListModel->commit();
-    QDialog::accept();
-}
-
-void ProfileDialog::reject() {
-    profileListModel->rollback();
-    QDialog::reject();
+void ProfileDialog::deleteProfile() {
+    if (m_ui->profileList->currentItem() != 0) {
+        settings.remove(currentProfileName);
+        delete m_ui->profileList->currentItem();
+    }
 }
 
 
-void ProfileDialog::select(int row, bool edit) {
-    m_ui->profileList->selectionModel()->clearSelection();
-    QModelIndex index = profileListModel->index(row, ProfileListModel::NAME);
-    m_ui->profileList->selectionModel()->select(index, QItemSelectionModel::Select);
-    if (edit) {
-        m_ui->profileList->edit(index);
+void ProfileDialog::closeOrResetButtonClicked(QAbstractButton *button) {
+    QDialogButtonBox::ButtonRole role = m_ui->profileManagerButtonBox->buttonRole(button);
+    if (role == QDialogButtonBox::ResetRole) {
+        qDebug() << "Reset";
+        settings.remove("");
+        foreach (QString key, rollbackPoint.keys()) {
+            settings.setValue(key, rollbackPoint.value(key));
+        }
+        loadProfiles();
+    }
+    else {
+        qDebug() << "Close";
+        close();
     }
 }

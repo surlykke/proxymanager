@@ -23,35 +23,49 @@
 #include <QDataWidgetMapper>
 #include <QMap>
 #include <QtGui>
-#include "profilelistmodel.h"
+
+static const char USEPROXY[] = "useProxy";
+static const char HOST[] = "host";
+static const char PORT[] = "port";
+static const char EXCEPTIONS[] = "exceptions";
+static const char USEAUTHENTICATION[] = "useAuthentication";
+static const char NTDOMAIN[] = "ntDomain";
+static const char USERID[] = "userId";
+static const char PASSWORD[] = "password";
 
 namespace Ui {
     class ProfileManager;
 }
 
 class ProfileDialog : public QDialog {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  ProfileDialog(QString selectedProfileId, ProfileListModel* profileListModel, QWidget * parent = 0);
-  ~ProfileDialog();
 
-public slots:
-  void newProfile();
-  void deleteProfile();
-  void selectionChanged(QItemSelection start, QItemSelection end);
-  virtual void accept();
-  virtual void reject();
 
+    ProfileDialog(QString selectedProfileName, QWidget * parent = 0);
+    ~ProfileDialog();
+
+private slots:
+    void newProfile();
+    void deleteProfile();
+    void loadProfile();
+    void saveProfile();
+    void itemChanged(QListWidgetItem *item, QListWidgetItem *oldItem);
+    void itemChanged(QListWidgetItem *item);
+    void closeOrResetButtonClicked(QAbstractButton *button);
 
 private:
-  int currentSelection();
-  void select(int row, bool edit = false);
-
-  Ui::ProfileManager *m_ui;
-  ProfileListModel* profileListModel;
-  QDataWidgetMapper *mapper;
-
+    void loadProfiles();
+    void setSelection(QString profileName);
+    QListWidgetItem* addItem(QString profileName);
+    QString newName(QString hint = "");
+    Ui::ProfileManager *m_ui;
+    QString currentProfileName;
+    QString selectedProfileName;
+    QSettings settings;
+    QMutex lock;
+    QMap<QString, QVariant> rollbackPoint;
 };
 
 #endif // PROFILEMANAGER_H

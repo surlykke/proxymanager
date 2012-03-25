@@ -52,13 +52,11 @@ public slots:
 
 private:
     void activateProfile(QString profileId);
-    QUrl proxySettingUrl;
-    ProfileListModel profileListModel;
     void notify(QString summary, QString message);
     bool notWhiteSpace(QString& string);
     QString networkSignature();
     QString currentNetworkSignature;
-    QString currentProfileId;
+    QString currentProfileName;
     QFileSystemWatcher resolvconfWatcher;
     QProcess cntlmProcess;
 };

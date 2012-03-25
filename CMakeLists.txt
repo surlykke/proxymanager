@@ -26,27 +26,28 @@ set ( proxymanager_HDRS
     profile.h
     )
 
-set ( proxymanager_SRCS
-    profilelistmodel.cpp
+set (
+    proxymanager_SRCS
     main.cpp
     trayicon.cpp
     profiledialog.cpp
     notifications.cpp
-    profile.cpp
     )
 
-set ( proxymanager_UIS
+set (
+    proxymanager_UIS
     profilemanager.ui
     )
 QT4_WRAP_UI(UIS ${proxymanager_UIS})
 
-set ( proxymanager_RSCS
+set (
+    proxymanager_RSCS
     proxymanager.qrc
     )
 QT4_ADD_RESOURCES(RSCS ${proxymanager_RSCS})
 
-set ( proxymanager_MOCS
-    profilelistmodel.h
+set (
+    proxymanager_MOCS
     trayicon.h
     profiledialog.h
     notifications.h
