@@ -31,6 +31,7 @@
 #include <QFile>
 #include <QSettings>
 
+
 TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
     setIcon(QIcon(":icons/proxymanager.png"));
 
@@ -80,9 +81,7 @@ void TrayIcon::makeContextMenu() {
 }
 
 void TrayIcon::chooseProfile(QAction *action) {
-    QSettings settings;
-    settings.beginGroup("associations");
-    settings.setValue(networkSignature(), action->text());
+    Associations().setAssociation(networkSignature(), action->text());
     activateProfile(action->text());
 }
 
@@ -124,6 +123,7 @@ void TrayIcon::activateProfile(QString profileName ) {
     cntlmProcess.setProcessChannelMode(QProcess::ForwardedChannels);
     cntlmProcess.start("cntlm", args);
     currentProfileName = profileName;
+    notify("Proxy settings changed", "Proxy setting '" + currentProfileName + "' activated");
     makeContextMenu();
 }
 
@@ -156,11 +156,10 @@ void TrayIcon::notify(QString summary, QString message) {
 }
 
 void TrayIcon::resolvconfChanged() {
-
     currentNetworkSignature = "INVALID";
-    QSettings settings;
-    QString profileName = settings.value("associations/" + networkSignature()).toString();
+    QString profileName = Associations().getAssociation(networkSignature());
 
+    QSettings settings;
     settings.beginGroup("profiles");
     QStringList profiles = settings.childGroups();
     settings.endGroup();
@@ -169,7 +168,7 @@ void TrayIcon::resolvconfChanged() {
         makeContextMenu();
     }
     else {
-        settings.remove("associations/" + networkSignature());
+        Associations().removeAssociation(networkSignature());
     }
 
     // If the file has been removed, QFileSystemWatcher stops watching it...
@@ -206,3 +205,27 @@ bool TrayIcon::notWhiteSpace(QString& string){
     return ! reg.exactMatch(string);
 }
 
+
+
+Associations::Associations()
+{
+    beginGroup("associations");
+}
+
+QString Associations::getAssociation(QString networkSignature)
+{
+    return value(networkSignature).toString();
+}
+
+void Associations::setAssociation(QString networkSignature, QString profileName)
+{
+    setValue(networkSignature, profileName);
+}
+
+void Associations::removeAssociation(QString networkSignature)
+{
+    if ("" != networkSignature.trimmed())
+    {
+        remove(networkSignature);
+    }
+}

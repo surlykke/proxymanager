@@ -61,4 +61,19 @@ private:
     QProcess cntlmProcess;
 };
 
+class Associations : private QSettings
+{
+public:
+    Associations();
+
+    QString getAssociation(QString networkSignature);
+    void setAssociation(QString networkSignature, QString profileName);
+    void removeAssociation(QString networkSignature);
+};
+
+
+
+
+
+
 #endif // TRAYICON_H

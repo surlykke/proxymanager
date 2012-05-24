@@ -58,5 +58,5 @@ add_executable ( proxymanager ${proxymanager_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS}
 target_link_libraries ( proxymanager  ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTDBUS_LIBRARY} ${QT_QTXML_LIBRARY} ${QT_QTNETWORK_LIBRARY} )
 
 install(TARGETS proxymanager DESTINATION bin CONFIGURATIONS Release)
-install(FILES   icons/proxymanager.svg DESTINATION share/icons/hicolor/scalable/apps)
-install(FILES   desktop/proxymanager.desktop DESTINATION share/applications)
+install(FILES   icons/proxymanager.svg DESTINATION share/icons/hicolor/scalable/apps CONFIGURATIONS Release)
+install(FILES   desktop/proxymanager.desktop DESTINATION share/applications CONFIGURATIONS Release)
