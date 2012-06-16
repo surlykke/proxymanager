@@ -32,7 +32,7 @@
 #include <QSettings>
 
 
-TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent) {
+TrayIcon::TrayIcon(QWidget *parent) : QSystemTrayIcon(parent), notificationId(0) {
     setIcon(QIcon(":icons/proxymanager.png"));
 
     makeContextMenu();
@@ -152,7 +152,9 @@ void TrayIcon::exitProxyManager() {
 
 
 void TrayIcon::notify(QString summary, QString message) {
-    Notifications(QDBusConnection::sessionBus(), this).Notify("Proxymanager client", 0, "", summary, message,  QStringList(), QMap<QString, QVariant>(), 2000);
+    Notifications n(QDBusConnection::sessionBus(), this);
+    QDBusPendingReply<uint> reply = n.Notify("Proxymanager client", notificationId, "proxymanager", summary, message,  QStringList(), QMap<QString, QVariant>(), 2000);
+    notificationId = reply.value();
 }
 
 void TrayIcon::resolvconfChanged() {

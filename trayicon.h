@@ -59,6 +59,7 @@ private:
     QString currentProfileName;
     QFileSystemWatcher resolvconfWatcher;
     QProcess cntlmProcess;
+    uint notificationId;
 };
 
 class Associations : private QSettings

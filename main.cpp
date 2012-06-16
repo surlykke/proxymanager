@@ -34,9 +34,7 @@ int main(int argc, char *argv[])
     
     TrayIcon trayIcon;
     QObject::connect(&a, SIGNAL(aboutToQuit()), &trayIcon, SLOT(close()));
-    while (! QSystemTrayIcon::isSystemTrayAvailable()) { // According to Qt documentation this shouldn't  be nessecary (?)
-        sleep(1);
-    }
+
     trayIcon.show();
     return a.exec();
 }
