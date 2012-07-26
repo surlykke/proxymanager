@@ -16,6 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with ProxyManager.  If not, see <http://www.gnu.org/licenses/>.
 -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -24,12 +25,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="749.96155"
+   height="750.03906"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.1 r9760"
-   sodipodi:docname="icon.svg"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="proxymanager.svg"
    inkscape:export-filename="/home/christian/projekter/ProxyManager/client/icons/icon.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
@@ -37,23 +38,12 @@
      id="defs4">
     <filter
        inkscape:collect="always"
-       id="filter3786"
-       x="-0.272969"
-       width="1.545938"
-       y="-0.28177444"
-       height="1.5635489">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="31.196457"
-         id="feGaussianBlur3788" />
-    </filter>
-    <filter
-       inkscape:collect="always"
        id="filter3794"
        x="-0.11640736"
        width="1.2328147"
        y="-0.12016243"
-       height="1.2403249">
+       height="1.2403249"
+       color-interpolation-filters="sRGB">
       <feGaussianBlur
          inkscape:collect="always"
          stdDeviation="13.303698"
@@ -67,31 +57,35 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="-165"
-     inkscape:cy="804.33006"
+     inkscape:zoom="0.5"
+     inkscape:cx="428.71976"
+     inkscape:cy="531.75153"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1440"
-     inkscape:window-height="837"
+     inkscape:window-height="849"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
     <sodipodi:guide
-       position="0,0"
+       position="0.56192085,-66.354537"
        orientation="0,744.09448"
        id="guide3042" />
     <sodipodi:guide
-       position="744.09448,0"
+       position="744.6564,-66.354537"
        orientation="-1052.3622,0"
        id="guide3044" />
     <sodipodi:guide
-       position="744.09448,1052.3622"
+       position="744.6564,986.00766"
        orientation="0,-744.09448"
        id="guide3046" />
     <sodipodi:guide
-       position="0,1052.3622"
+       position="0.56192085,986.00766"
        orientation="1052.3622,0"
        id="guide3048" />
   </sodipodi:namedview>
@@ -103,16 +97,17 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(0.56192085,-235.96861)">
     <path
-       transform="matrix(2.3805648,0,0,2.5339663,-701.11532,-244.22873)"
+       transform="matrix(2.2113693,0,0,2.2688819,-636.48788,-198.18733)"
        sodipodi:type="arc"
        style="opacity:0.78515625;fill:#708caa;fill-opacity:0.97551018;stroke:#000000;filter:url(#filter3794)"
        id="path2987-9"
@@ -120,7 +115,7 @@
        sodipodi:cy="356.64789"
        sodipodi:rx="137.14285"
        sodipodi:ry="132.85715"
-       d="m 594.28571,356.64789 a 137.14285,132.85715 0 1 1 -274.28571,0 137.14285,132.85715 0 1 1 274.28571,0 z"
+       d="m 594.28571,356.64789 c 0,73.37497 -61.40095,132.85715 -137.14286,132.85715 C 381.40095,489.50504 320,430.02286 320,356.64789 c 0,-73.37498 61.40095,-132.85715 137.14285,-132.85715 75.74191,0 137.14286,59.48217 137.14286,132.85715 z"
        inkscape:export-filename="/home/christian/projekter/ProxyManager/client/icons/icon.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
@@ -132,8 +127,8 @@
        sodipodi:cy="356.64789"
        sodipodi:rx="137.14285"
        sodipodi:ry="132.85715"
-       d="m 594.28571,356.64789 a 137.14285,132.85715 0 1 1 -274.28571,0 137.14285,132.85715 0 1 1 274.28571,0 z"
-       transform="matrix(1.549568,0,0,1.5460678,-206.94535,-136.18254)"
+       d="m 594.28571,356.64789 c 0,73.37497 -61.40095,132.85715 -137.14286,132.85715 C 381.40095,489.50504 320,430.02286 320,356.64789 c 0,-73.37498 61.40095,-132.85715 137.14285,-132.85715 75.74191,0 137.14286,59.48217 137.14286,132.85715 z"
+       transform="matrix(1.1986849,0,0,1.2373521,-25.81241,-35.153804)"
        inkscape:export-filename="/home/christian/projekter/ProxyManager/client/icons/icon.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
