@@ -123,8 +123,9 @@ void TrayIcon::activateProfile(QString profileName ) {
     cntlmProcess.setProcessChannelMode(QProcess::ForwardedChannels);
     cntlmProcess.start("cntlm", args);
     currentProfileName = profileName;
-    notify("Proxy settings changed", "Proxy setting '" + currentProfileName + "' activated");
+    notify("Proxy settings changed", "Proxy profile '" + currentProfileName + "' activated");
     makeContextMenu();
+    setToolTip("Proxy profile '" + currentProfileName + "' active.");
 }
 
 
