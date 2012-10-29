@@ -1,3 +1,4 @@
 syntax: glob
 proxymanager.pro.user
 CMakeLists.txt.user
+build
