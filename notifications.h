@@ -47,6 +47,7 @@ public Q_SLOTS: // METHODS
     {
         QList<QVariant> argumentList;
         argumentList << qVariantFromValue(app_name) << qVariantFromValue(id) << qVariantFromValue(icon) << qVariantFromValue(summary) << qVariantFromValue(body) << qVariantFromValue(actions) << qVariantFromValue(hints) << qVariantFromValue(timeout);
+        qDebug() << "Calling notify with" << argumentList;
         return asyncCallWithArgumentList(QLatin1String("Notify"), argumentList);
     }
 

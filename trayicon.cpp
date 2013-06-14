@@ -154,7 +154,14 @@ void TrayIcon::exitProxyManager() {
 
 void TrayIcon::notify(QString summary, QString message) {
     Notifications n(QDBusConnection::sessionBus(), this);
-    QDBusPendingReply<uint> reply = n.Notify("Proxymanager client", notificationId, "proxymanager", summary, message,  QStringList(), QMap<QString, QVariant>(), 2000);
+    QDBusPendingReply<uint> reply = n.Notify("Proxymanager client", 
+                                             notificationId,
+                                             "proxymanager", 
+                                             summary,
+                                             message,  
+                                             QStringList(), 
+                                             QMap<QString, QVariant>(), 
+                                             2000);
     notificationId = reply.value();
 }
 
